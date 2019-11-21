@@ -2,8 +2,9 @@ import ROOT
 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
 from HiggsAnalysis.CombinedLimit.ModelTools import *
 
-cat  = "monojet"
-fin = ROOT.TFile('/afs/cern.ch/work/a/aalbert/public/share/2019-10-16_legacylimit/legacy_limit_2017.root','READ')
+cat  = "vbf"
+fin = ROOT.TFile("vbf_limit_2017.root","READ")
+#'/afs/cern.ch/work/a/aalbert/public/share/2019-10-16_legacylimit/legacy_limit_2017.root','READ')
 fdir = fin.Get("category_"+cat)
 
 fout = ROOT.TFile('mono-x.root','RECREATE')
@@ -19,7 +20,7 @@ for s in samplehistos:
   break
 nbins = samplehist.GetNbinsX()
 
-varl = ROOT.RooRealVar("met","met",0,100000);
+varl = ROOT.RooRealVar('mjj','mjj',0,100000);
 
 # Keys in the fdir 
 keys_local = fdir.GetListOfKeys() 

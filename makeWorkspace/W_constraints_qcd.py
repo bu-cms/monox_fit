@@ -1,6 +1,5 @@
 import ROOT
 from counting_experiment import *
-import fitConfig
 # Define how a control region(s) transfer is made by defining cmodel provide, the calling pattern must be unchanged!
 # First define simple string which will be used for the datacard 
 model = "qcd_wjets"
@@ -17,7 +16,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag):
   # special datasets/histograms representing these and systematic effects 
   # but for now this is just kept simple 
   processName  = "WJets" # Give a name of the process being modelled
-  metname      = fitConfig.metname    # Observable variable name 
+  metname      = 'mjj'    # Observable variable name 
   targetmc     = _fin.Get("signal_qcdwjets")      # define monimal (MC) of which process this config will model
   controlmc    = _fin.Get("Wmn_qcdwjets")  # defines in / out acceptance
   controlmc_e  = _fin.Get("Wen_qcdwjets")  # defines in / out acceptance
