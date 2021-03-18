@@ -66,7 +66,7 @@ def get_jes_variations(obj, f_jes, category):
 
   if 'vbf' in category:
     tag = 'ZJetsToNuNu'
-    key_valid =lambda x: (tag in x) and (not 'jesTotal' in x), keynames
+    key_valid = lambda x: (tag in x) and (not 'jesTotal' in x)
     regex_to_remove = '{TAG}20\d\d_'.format(TAG=tag)
   else:
     channel = 'monov' if 'monov' in category else 'monojet'
@@ -470,37 +470,39 @@ def create_workspace(fin, fout, category, args):
       jes_varied_hists = get_jes_variations(obj, f_jes, category)
       write_dict(jes_varied_hists)
 
-      # Diboson variations
-      vvprocs = ['wz','ww','zz','zgamma','wgamma']
-      process = "_".join(key.GetName().split("_")[1:])
-      if process in vvprocs:
-        diboson_varied_hists = get_diboson_variations(obj, category, process)
-        write_dict(diboson_varied_hists)
+      # TODO: For now, don't do any of the following for VBF
+      if not "vbf" in category:
+        # Diboson variations
+        vvprocs = ['wz','ww','zz','zgamma','wgamma']
+        process = "_".join(key.GetName().split("_")[1:])
+        if process in vvprocs:
+          diboson_varied_hists = get_diboson_variations(obj, category, process)
+          write_dict(diboson_varied_hists)
 
-      if 'gjets' in key.GetName():
-        photon_id_varied_hists = get_photon_id_variations(obj, category)
-        write_dict(photon_id_varied_hists)
+        if 'gjets' in key.GetName():
+          photon_id_varied_hists = get_photon_id_variations(obj, category)
+          write_dict(photon_id_varied_hists)
 
-      if key.GetName() == 'gjets_qcd':
-        photon_qcd_varied_hists = get_photon_qcd_variations(obj, category)
-        write_dict(photon_qcd_varied_hists)
+        if key.GetName() == 'gjets_qcd':
+          photon_qcd_varied_hists = get_photon_qcd_variations(obj, category)
+          write_dict(photon_qcd_varied_hists)  # mistag variations
+        
+        mistag_varied_hists = get_mistag_variations(obj, category)
+        write_dict(mistag_varied_hists)
+        # Signal theory variations
+        signal_theory_varied_hists = get_signal_theory_variations(obj, category)
+        write_dict(signal_theory_varied_hists)
 
-      # mistag variations
-      mistag_varied_hists = get_mistag_variations(obj, category)
-      write_dict(mistag_varied_hists)
-      # Signal theory variations
-      signal_theory_varied_hists = get_signal_theory_variations(obj, category)
-      write_dict(signal_theory_varied_hists)
+        # MC stat
+        if is_MC_bkg(name):
+          # for MC-based background, merge the stat unc into single nuisance
+          region_name = key.GetName().split("_")[0]
+          to_merge_mc_bkgs[region_name].append(obj)
 
-      # MC stat
-      if is_MC_bkg(name):
-        # for MC-based background, merge the stat unc into single nuisance
-        region_name = key.GetName().split("_")[0]
-        to_merge_mc_bkgs[region_name].append(obj)
-
-  # now do the merging of MC-based bkg
-  stat_varied_hists = get_mergedMC_stat_variations(to_merge_mc_bkgs, category)
-  write_dict(stat_varied_hists)
+  if not "vbf" in category:
+    # now do the merging of MC-based bkg
+    stat_varied_hists = get_mergedMC_stat_variations(to_merge_mc_bkgs, category)
+    write_dict(stat_varied_hists)
 
 
   # Write the workspace
