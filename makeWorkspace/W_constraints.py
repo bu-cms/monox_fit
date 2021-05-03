@@ -230,9 +230,12 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
 
 
   felectronid = r.TFile.Open("sys/ele_id_unc.root")
-  add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_id_up".format(**filler), "wen_weights_%s_CMS_eff%s_e_Up"%(cid, year), _fOut, invert=True, scale=2.0)
-  add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_id_dn".format(**filler), "wen_weights_%s_CMS_eff%s_e_Down"%(cid, year), _fOut, invert=True, scale=2.0)
-  CRs[1].add_nuisance_shape("CMS_eff{YEAR}_e".format(**filler),_fOut, functype='quadratic')
+  add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_id_stat_up".format(**filler), "wen_weights_%s_CMS_eff%s_e_stat_Up"%(cid, year), _fOut, invert=True, scale=2.0)
+  add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_id_stat_dn".format(**filler), "wen_weights_%s_CMS_eff%s_e_stat_Down"%(cid, year), _fOut, invert=True, scale=2.0)
+  CRs[1].add_nuisance_shape("CMS_eff{YEAR}_e_stat".format(**filler),_fOut, functype='quadratic')
+  add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_id_syst_up".format(**filler), "wen_weights_%s_CMS_eff%s_e_syst_Up"%(cid, year), _fOut, invert=True, scale=2.0)
+  add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_id_syst_dn".format(**filler), "wen_weights_%s_CMS_eff%s_e_syst_Down"%(cid, year), _fOut, invert=True, scale=2.0)
+  CRs[1].add_nuisance_shape("CMS_eff{YEAR}_e_syst".format(**filler),_fOut, functype='quadratic')
   add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_reco_up".format(**filler), "wen_weights_%s_CMS_eff%s_e_reco_Up"%(cid, year), _fOut, invert=True)
   add_variation(WScales_e, felectronid, "{CHANNEL}_{YEAR}_1e_reco_dn".format(**filler), "wen_weights_%s_CMS_eff%s_e_reco_Down"%(cid, year), _fOut, invert=True)
   CRs[1].add_nuisance_shape("CMS_eff{YEAR}_e_reco".format(**filler),_fOut, functype='quadratic')
