@@ -215,6 +215,10 @@ def get_signal_theory_variations(obj, category):
   m = re.match('lq_m\d+_d[\d,p]+',real_process)
   if m:
     process_for_unc = 'ggh'
+  
+  m = re.match('.*S3D.*',real_process)
+  if m:
+    process_for_unc = 'ggh'
 
   if not process_for_unc:
     return {}

@@ -26,7 +26,7 @@ def get_nuisance_name(nuisance, year):
 
     # Remove "up/down" tag from the nuisance name
     name = re.sub('Up|Down', '', name)
- 
+
     return name
 
 def extract_year(category):
@@ -60,7 +60,13 @@ def is_MC_bkg(name):
             "signal_wh",
             "signal_zh",
             "signal_vbf",
-            "scalar", "pseudo", "lq", "axial", "vector", "add",
+            "scalar",
+            "pseudo",
+            "lq",
+            "axial",
+            "vector",
+            "add",
+            "S3D"
             ]
     if name in model_bkg_list:
         return False
