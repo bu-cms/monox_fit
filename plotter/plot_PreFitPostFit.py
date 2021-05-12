@@ -10,7 +10,7 @@ blind = False
 
 new_dic = defaultdict(dict)
 
-def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=False):
+def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=False, fit="fit_b"):
 
   datalab = {"singlemuon":"Wmn", "dimuon":"Zmm", "gjets":"gjets", "signal":"signal", "singleelectron":"Wen", "dielectron":"Zee"}
 
@@ -20,15 +20,15 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
 
   f_data.cd("category_"+category)
   # if region=="signal":
-  #   h_data = f_mlfit.Get("shapes_fit_b/"+category+"_signal/total_background")
+  #   h_data = f_mlfit.Get("shapes_" + fit + "/"+category+"_signal/total_background")
   #   for i in range(1,h_data.GetNbinsX()+1):
   #     h_data.SetBinContent(i,h_data.GetBinContent(i)*h_data.GetBinWidth(i))
   # else:
   h_data = gDirectory.Get(datalab[region]+"_data")
-
-  h_postfit_sig = f_mlfit.Get("shapes_fit_b/"+category+"_"+category+"_signal/total_background")
-  h_prefit_sig = f_mlfit.Get("shapes_prefit/"+category+"_"+category+"_signal/total_background")
-
+  filler = {
+    "CATEGORY" : category,
+    "FIT" : fit
+  }
   channel = {"singlemuon":category+"_singlemu", "dimuon":category+"_dimuon", "gjets":category+"_photon", "signal":category+"_signal", "singleelectron":category+"_singleel", "dielectron":category+"_dielec"}
 
   if "mono" in category:
@@ -90,7 +90,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     'gjets'  :"#9A9EAB",
     'qcd_gjets'  :"#9A9EAB",
     'ewk_gjets'  :"#9A9EAB",
-    'qcd'    :"#F1F1F2",
+    'qcd'    : "#dedede",
     'top'    :"#CF3721",
     'ewk'    :"#000000",
     'zll'    :"#9A9EAB",
@@ -136,21 +136,21 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
 
   # Post-Fit
   h_postfit = {}
-  h_postfit['totalsig'] = f_mlfit.Get("shapes_fit_b/"+channel[region]+"/total")
-  h_postfit['total'] = f_mlfit.Get("shapes_fit_b/"+channel[region]+"/total")
+  h_postfit['totalsig'] = f_mlfit.Get("shapes_" + fit + "/"+channel[region]+"/total")
+  h_postfit['total'] = f_mlfit.Get("shapes_" + fit + "/"+channel[region]+"/total")
   h_all_postfit = TH1F("h_all_postfit","h_all_postfit",len(binLowE)-1,array('d',binLowE))
   h_other_postfit = TH1F("h_other_postfit","h_other_postfit",len(binLowE)-1,array('d',binLowE))
   h_minor_postfit = TH1F("h_minor_postfit","h_minor_postfit",len(binLowE)-1,array('d',binLowE))
 
   h_stack_postfit = THStack("h_stack_postfit","h_stack_postfit")
-  h_postfit['totalv2'] = f_mlfit.Get("shapes_fit_b/"+channel[region]+"/total_background")
+  h_postfit['totalv2'] = f_mlfit.Get("shapes_" + fit + "/"+channel[region]+"/total_background")
 
   for i in range(1, h_postfit['totalv2'].GetNbinsX()+1):
     error = h_postfit['totalv2'].GetBinError(i)
     content = h_postfit['totalv2'].GetBinContent(i)
 
   for process in processes:
-    h_postfit[process] = f_mlfit.Get("shapes_fit_b/"+channel[region]+"/"+process)
+    h_postfit[process] = f_mlfit.Get("shapes_" + fit + "/"+channel[region]+"/"+process)
     if (not h_postfit[process]): continue
     if (str(h_postfit[process].Integral())=="nan"): continue
     for i in range(1,h_postfit[process].GetNbinsX()+1):
@@ -210,16 +210,16 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   dummy.GetXaxis().SetTitleSize(0)
   dummy.GetXaxis().SetLabelSize(0)
   if region is 'signal':
-    dummy.SetMaximum(50*dummy.GetMaximum())
+    dummy.SetMaximum(75*dummy.GetMaximum())
   else:
-    dummy.SetMaximum(25*dummy.GetMaximum())
+    dummy.SetMaximum(50*dummy.GetMaximum())
   dummy.SetMinimum(0.002)
   dummy.GetYaxis().SetTitleOffset(1.15)
   dummy.Draw()
 
 
   h_other_prefit.SetLineColor(1)
-  h_other_prefit.SetFillColor(33)
+  h_other_prefit.SetFillColor(TColor.GetColor(colors["qcd"]))
   h_other_prefit.Scale(1,"width")
 
   h_all_prefit.SetLineColor(2)
@@ -266,7 +266,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
 
   #legend.SetTextSize(0.04)
   if region in 'signal' :
-    legend = TLegend(0.50, 0.60, 0.92, .92);
+    legend = TLegend(0.60, 0.65, 0.92, .92);
     legend.SetFillStyle(0);
     legend.SetBorderSize(0);
     legend.AddEntry(h_data, "Data", "elp")
@@ -291,7 +291,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
       legend.AddEntry(h_postfit['totalsig'], "S+B post-fit", "f")
 
   else:
-    legend = TLegend(.5,.65,.90,.90)
+    legend = TLegend(.55,.67,.97,.92)
     legend.AddEntry(h_data,"Data","elp")
     legend.AddEntry(h_all_postfit, "Post-fit ("+legname+")", "l")
     legend.AddEntry(h_all_prefit, "Pre-fit ("+legname+")", "l")
@@ -307,32 +307,37 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   latex2.SetTextSize(0.6*c.GetTopMargin())
   latex2.SetTextFont(42)
   latex2.SetTextAlign(31) # align right
-  latex2.DrawLatex(0.94, 0.95,"{LUMI:.1f} fb^{{-1}} (13 TeV)".format(LUMI=lumi if region!='signal' else lumi/5))
+  latex2.DrawLatex(0.94, 0.95,"{LUMI:.1f} fb^{{-1}} (13 TeV)".format(LUMI=lumi))
   latex2.SetTextSize(0.6*c.GetTopMargin())
   latex2.SetTextFont(62)
   latex2.SetTextAlign(11) # align right
-  if region is "signal" and category is "monojet":
-    latex2.DrawLatex(0.200, 0.85, "CMS")
-  else:
-    latex2.DrawLatex(0.175, 0.85, "CMS")
+
+  latex2.DrawLatex(0.2, 0.87, "CMS")
+
 
   latex2.SetTextSize(0.6*c.GetTopMargin())
   latex2.SetTextFont(52)
   latex2.SetTextAlign(11)
   offset = 0.005
-  #latex2.DrawLatex(0.28+offset, 0.85, "Preliminary")
+  
+  if 'monojet' in category:
+    channel = 'Monojet'
+  elif 'loose' in category:
+    channel = 'Mono-V (low-purity)'
+  elif 'tight' in category:
+    channel = 'Mono-V (high-purity)'
+
 
   categoryLabel = TLatex();
   categoryLabel.SetNDC();
   categoryLabel.SetTextSize(0.5*c.GetTopMargin());
   categoryLabel.SetTextFont(42);
   categoryLabel.SetTextAlign(11);
-  if region is "signal" and category is "monojet":
-    categoryLabel.DrawLatex(0.200,0.80,"monojet");
-    categoryLabel.Draw("same");
-  elif region is "signal" and category is "monov":
-    categoryLabel.DrawLatex(0.175,0.80,"mono-V");
-    categoryLabel.Draw("same");
+  # if region is "signal":
+  categoryLabel.DrawLatex(0.2,0.83,channel);
+  categoryLabel.DrawLatex(0.2,0.80,str(year));
+  categoryLabel.Draw("same");
+
 
   gPad.RedrawAxis()
 
@@ -480,8 +485,8 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   dummy2.SetMinimum(0.5)
   dummy2.Draw("hist")
 
-  ratiosys.SetFillColor(kGray) #SetFillColor(ROOT.kYellow)
-  ratiosys.SetLineColor(kGray) #SetLineColor(1)
+  ratiosys.SetFillColor(kGray)
+  ratiosys.SetLineColor(kGray)
   ratiosys.SetLineWidth(1)
   ratiosys.SetMarkerSize(0)
   ratiosys.Draw("e2same")
@@ -534,27 +539,16 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
 
   for hbin in range(0,data_pull.GetNbinsX()+1):
     if (h_postfit['totalv2'].GetBinContent(hbin)>0):
-
+      print(category, region, hbin)
       addedsqrt +=  (data_pull.GetBinContent(hbin)*data_pull.GetBinContent(hbin))/(h_postfit['totalv2'].GetBinError(hbin)*h_postfit['totalv2'].GetBinError(hbin))
 
       sigma = math.sqrt(h_postfit['totalv2'].GetBinError(hbin)* h_postfit['totalv2'].GetBinError(hbin) + h_data.GetBinError(hbin)*h_data.GetBinError(hbin))
 
       data_pull.SetBinContent(hbin,data_pull.GetBinContent(hbin)/sigma)
-      #data_pull.SetBinContent(hbin,data_pull.GetBinContent(hbin)/h_postfit['totalv2'].GetBinError(hbin))
 
       data_pull.SetBinError(hbin,0)
       mean  += data_pull.GetBinContent(hbin)
       chi2  += (data_pull.GetBinContent(hbin)*data_pull.GetBinContent(hbin))
-      #sigma += ((data_pull.GetBinContent(hbin)-0.242807588371)*(data_pull.GetBinContent(hbin)-0.242807588371))
-
-
-  data_pull.SaveAs("test.root")
-
-  #print "MEAN: ", mean
-  #print "CHI2: ", math.sqrt(chi2)/data_pull.GetNbinsX()
-
-  #print "Added", sqrt(addedsqrt), "divided: ", sqrt(addedsqrt)/data_pull.GetNbinsX()
-  #print "Added2", addedsqrt, "divided: ", addedsqrt/data_pull.GetNbinsX()
 
   data_pull.SetLineColor(kAzure-4)
   data_pull.SetFillColor(kAzure-4)
@@ -565,7 +559,6 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   data_pull_sig.Sumw2()
   for hbin in range(0,data_pull_sig.GetNbinsX()+1):
     if (h_postfit['totalv2'].GetBinContent(hbin)>0):
-      #print "bin",hbin,"data pull diff", data_pull_sig.GetBinContent(hbin), "sys", h_postfit['totalv2'].GetBinError(hbin)
       data_pull_sig.SetBinContent(hbin,data_pull_sig.GetBinContent(hbin)/h_postfit['totalv2'].GetBinError(hbin))
       data_pull_sig.SetBinError(hbin,0)
 
@@ -575,12 +568,12 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   data_pull_sig.SetMarkerColor(2)
 
 
-  legend3 = TLegend(0.20,0.21,0.60,0.23,"","brNDC");
+  legend3 = TLegend(0.20,0.21,0.60,0.23,"","brNDC")
   legend3.AddEntry(data_pull    , "Background only", "f")
   legend3.SetNColumns(2)
-  legend3.SetShadowColor(0);
-  legend3.SetFillColor(0);
-  legend3.SetLineColor(0);
+  legend3.SetShadowColor(0)
+  legend3.SetFillColor(0)
+  legend3.SetLineColor(0)
 
   dummy3 = TH1F("dummy3","dummy3",len(binLowE)-1,array('d',binLowE))
   for i in range(1,dummy3.GetNbinsX()):
@@ -612,10 +605,6 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   latex_chi = TLatex()
   latex_chi.SetNDC()
   latex_chi.SetTextSize(0.025)
-  #latex_chi.DrawLatex(0.16,0.20,"#Chi^{2} = "+str(round(addedsqrt/data_pull.GetNbinsX(),2)) + "      Mean = "+ str(round(mean,2)))
-  #latex_chi.DrawLatex(0.16,0.20,"#Chi^{2} = "+str(round(addedsqrt/data_pull.GetNbinsX(),2)) )
-  #latex_chi.DrawLatex(0.16,0.19,"Mean = "+str(round(mean,2)))
-  #latex_chi.Draw("same")
 
 
   pad2.RedrawAxis("G sameaxis")
@@ -625,19 +614,9 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   import os
   if not os.path.exists(outdir):
     os.makedirs(outdir)
-  c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + ".pdf")
-  c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + ".png")
-  c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + ".C")
-  c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + ".root")
+  c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + ".pdf")
+  c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + ".png")
 
   c.Close()
   f_mlfit.Close()
   f_data.Close()
-#plotPreFitPostFit("singlemuon","monov")
-#plotPreFitPostFit("dimuon","monov")
-#plotPreFitPostFit("gjets","monov")
-#plotPreFitPostFit("singleelectron","monov")
-#plotPreFitPostFit("dielectron","monov")
-
-#plotPreFitPostFit("signal","monojet")
-#plotPreFitPostFit("signal","monov")
