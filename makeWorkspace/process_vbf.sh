@@ -32,7 +32,7 @@ git diff >> ${INFOFILE}
 ./runModel.py ${WSFILE} --categories vbf_2017 --out ${OUTDIR}/combined_model_vbf_forIC_2017.root --rename "mjj_MTR_2017"
 ./runModel.py ${WSFILE} --categories vbf_2018 --out ${OUTDIR}/combined_model_vbf_forIC_2018.root --rename "mjj_MTR_2018"
 
-cp sys/vbf_qcd_nckw_ws_201*.root ${OUTDIR}
+cp sys/vbf_hf_estimate_ws*.root ${OUTDIR}
 
 # Save the check sums for the output
 echo "--- OUTPUT ---" >> ${INFOFILE}
