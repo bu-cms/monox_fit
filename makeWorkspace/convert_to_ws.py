@@ -17,10 +17,10 @@ def main():
     for year in [2017, 2018]:
         h = f.Get('qcd_estimate_mjj_{}'.format(year))
         # Divide content by bin width before exporting to WS!
-        for idx in range(h.GetNbinsX() + 1):
-            val = h.GetBinContent(idx)
-            width = h.GetBinWidth(idx)
-            h.SetBinContent(idx, val / width)
+        # for idx in range(h.GetNbinsX() + 1):
+            # val = h.GetBinContent(idx)
+            # width = h.GetBinWidth(idx)
+            # h.SetBinContent(idx, val / width)
 
         outpath = pjoin('output/vbf_hf_estimate_ws_{}.root'.format(year))
         outf = r.TFile(outpath, 'RECREATE')
