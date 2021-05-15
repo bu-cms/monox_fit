@@ -1,6 +1,6 @@
 Combination of vbf_@YEAR_template_pretty_withphotons.txt  vbf_@YEAR_photon.txt
 imax 6 number of bins
-jmax 16 number of processes minus 1
+jmax 17 number of processes minus 1
 kmax * number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes *                 vbf_@YEAR_dielec    combined_model.root combinedws:vbf_@YEAR_Zee_$PROCESS combinedws:vbf_@YEAR_Zee_$PROCESS_$SYSTEMATIC
