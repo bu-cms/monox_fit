@@ -17,14 +17,14 @@ def convert_to_ws(inputfile, inputhistname, outpath, year):
     outf = r.TFile(outpath, 'RECREATE')
     subd = outf.mkdir('category_vbf_{}'.format(year))
 
-    ws = r.RooWorkspace('ws_vbf_{}'.format(year))
+    ws = r.RooWorkspace('wspace_vbf_{}'.format(year))
     ws._import = SafeWorkspaceImporter(ws)
 
     variable_name = 'mjj_vbf_{}'.format(year)
 
     varl = r.RooRealVar(variable_name, variable_name, 0,100000)
     
-    name = 'qcd_temp_sr'
+    name = 'rebin_QCD_hist_counts'
     dhist = r.RooDataHist(
         name,
         "DataSet - vbf_%s, %s" % (year,name),
