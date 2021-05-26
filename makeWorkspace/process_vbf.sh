@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-TAG='default'
-INDIR=../input/vbf/merged_2021-05-08_vbfhinv_ULv8_05Feb21
+TAG='with_IC_qcd_template_UL'
+INDIR=../input/vbf/merged_2021-05-26_vbfhinv_ULv8_05Feb21
 INDIR="$(readlink -e $INDIR)"
 
 OUTDIR="../vbf/$(basename $INDIR)/${TAG}/root"
