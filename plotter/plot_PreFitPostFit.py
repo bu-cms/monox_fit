@@ -50,6 +50,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
         'wgamma',
         'zgamma'
     ]
+  # For VBF, there are two QCD templates: HF noise estimate ("qcd_hf") + nominal QCD estimation ("qcd")
   else:
     mainbkgs = {
             "singlemuon":["ewk_wjets","qcd_wjets"],
@@ -61,6 +62,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
             }
     processes = [
         'qcd',
+        'qcd_hf',
         'qcd_zll',
         'qcdzll',
         'ewkzll',
@@ -85,7 +87,8 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     'gjets'  :"#9A9EAB",
     'qcd_gjets'  :"#9A9EAB",
     'ewk_gjets'  :"#9A9EAB",
-    'qcd'    :"#F1F1F2",
+    'qcd'       :"#F1F1F2",
+    'qcd_hf'    :"#FF0000",
     'top'    :"#CF3721",
     'ewk'    :"#000000",
     'zll'    :"#9A9EAB",
@@ -285,6 +288,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
       legend.AddEntry(h_postfit['top'], "Top quark", "f")
       # legend.AddEntry(h_postfit['gjets'], "Z(ll)+jets, #gamma+jets", "f")
       legend.AddEntry(h_postfit['qcd'], "QCD", "f")
+      legend.AddEntry(h_postfit['qcd_hf'], "HF Est.", "f")
     if sb:
       legend.AddEntry(h_postfit['totalsig'], "S+B post-fit", "f")
 

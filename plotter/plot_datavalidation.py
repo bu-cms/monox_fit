@@ -446,7 +446,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
 
     c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.pdf")
     c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.png")
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.C")
+    # c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.C")
 
     c.Close()
     f_mlfit.Close()
