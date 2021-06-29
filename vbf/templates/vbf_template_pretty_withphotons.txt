@@ -17,7 +17,7 @@ shapes ewk_wjets         vbf_@YEAR_signal    combined_model.root combinedws:vbf_
 shapes ewk_zjets         vbf_@YEAR_signal    combined_model.root combinedws:vbf_@YEAR_ewkqcd_signal_qcd_zjets_model
 shapes qcd_wjets         vbf_@YEAR_signal    combined_model.root combinedws:vbf_@YEAR_qcd_wjetssignal_qcd_zjets_model
 shapes qcd_zjets         vbf_@YEAR_signal    combined_model.root combinedws:vbf_@YEAR_signal_qcd_zjets_model
-shapes qcd_hf            vbf_@YEAR_signal    vbf_hf_estimate_ws_@YEAR.root category_vbf_@YEAR/ws_vbf_@YEAR:qcd_temp_sr
+shapes qcd_hf            vbf_@YEAR_signal    vbf_hf_estimate_ws_@YEAR.root category_vbf_@YEAR/wspace_vbf_@YEAR:qcd_estimate_mjj_@YEAR
 shapes qcd               vbf_@YEAR_signal    vbf_qcd_nckw_ws_@YEAR.root category_vbf_@YEAR/wspace_vbf_@YEAR:rebin_QCD_hist_counts
 shapes *                 vbf_@YEAR_singleel  combined_model.root combinedws:vbf_@YEAR_Wen_$PROCESS combinedws:vbf_@YEAR_Wen_$PROCESS_$SYSTEMATIC
 shapes data_obs          vbf_@YEAR_singleel  combined_model.root combinedws:vbf_@YEAR_Wen_data
