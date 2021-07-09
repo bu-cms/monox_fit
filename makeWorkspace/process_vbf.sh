@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 TAG='latest'
-INDIR=../input/vbf/merged_2021-07-01_vbfhinv_ULv8_05Feb21
+INDIR=../input/vbf/merged_2021-07-08_vbfhinv_ULv8 
 INDIR="$(readlink -e $INDIR)"
 
 OUTDIR="../vbf/$(basename $INDIR)/${TAG}/root"
