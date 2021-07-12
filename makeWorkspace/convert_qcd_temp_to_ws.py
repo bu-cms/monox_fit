@@ -44,8 +44,6 @@ def convert_to_ws(inputfile, inputhistname, outpath, year):
 
 def main():
     dummy = []
-    # File containing the HF estimate shapes for 2017 and 2018
-    inputfile = 'sys/vbf_hf_estimate.root'
 
     inputfiles = [
         'sys/out_MTR_2017.root_qcdDD.root',
