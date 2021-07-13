@@ -379,7 +379,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
 
     #legend = TLegend(0.35, 0.79, 0.95, .92);
 
-    legend = TLegend(0.35, 0.77, 0.95, 0.90);
+    legend = TLegend(0.15, 0.32, 0.75, 0.45);
 
     legend.SetFillStyle(0);
     legend.AddEntry(h_data_1, name+" Data", "elp")
@@ -404,10 +404,8 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     latex2.SetTextFont(42)
     latex2.SetTextAlign(31) # align right
     latex2.DrawLatex(0.94, 0.95,"{LUMI:.1f} fb^{{-1}} (13 TeV)".format(LUMI=lumi))
-    latex2.SetTextSize(0.6*c.GetTopMargin())
-    latex2.SetTextFont(62)
-    latex2.SetTextAlign(11) # align right
-    latex2.DrawLatex(0.200, 0.85, "CMS")
+    latex2.DrawLatex(0.25, 0.95,"{YEAR:.0f}".format(YEAR=year))
+
     latex2.SetTextSize(0.6*c.GetTopMargin())
     latex2.SetTextFont(52)
     latex2.SetTextAlign(11)
@@ -419,13 +417,13 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     #categoryLabel.SetTextSize(0.5*c.GetTopMargin());
     categoryLabel.SetTextSize(0.042);
     categoryLabel.SetTextFont(42);
-    categoryLabel.SetTextAlign(11);
+    categoryLabel.SetTextAlign(31);
     if "monojet" in category:
-        categoryLabel.DrawLatex(0.2, 0.35, "Monojet");
+        categoryLabel.DrawLatex(0.85, 0.85, "Monojet");
     elif "loose" in category:
-        categoryLabel.DrawLatex(0.2, 0.35, "Mono-V (low-purity)");
+        categoryLabel.DrawLatex(0.85, 0.85, "Mono-V (low-purity)");
     elif "tight" in category:
-        categoryLabel.DrawLatex(0.2, 0.35, "Mono-V (high-purity)");
+        categoryLabel.DrawLatex(0.85, 0.85, "Mono-V (high-purity)");
     categoryLabel.Draw("same");
 
 
@@ -502,14 +500,36 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     #ratiosys.Draw("e2same")
     #g_ratio_pre.Draw("epsame")
 
+    if region2 == 'combinedW':
+        h_clone.GetXaxis().SetRangeUser(0,0.25)
+        h_clone.SetMinimum(0)
+        h_clone.SetMaximum(0.25)
+    elif region2 == 'gjets':
+        h_clone.GetXaxis().SetRangeUser(0,0.35)
+        h_clone.SetMinimum(0)
+        h_clone.SetMaximum(0.35)
+
 
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
+    latex2.SetTextSize(0.6*c.GetTopMargin())
+    latex2.SetTextFont(42)
+    latex2.SetTextAlign(11) # align right
+    t = latex2.DrawLatex(0.200, 0.95, "#bf{CMS}")
     c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.pdf")
     c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.png")
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.C")
+    t.Delete()
+    t = latex2.DrawLatex(0.200, 0.95, "#bf{CMS} #it{Preliminary}")
+    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio_preliminary.pdf")
+    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio_preliminary.png")
+    t.Delete()
+    t = latex2.DrawLatex(0.200, 0.95, "#bf{CMS} #it{Supplementary}")
+    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio_supplementary.pdf")
+    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio_supplementary.png")
+
+
 
     c.Close()
     f_mlfit.Close()
