@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 TAG='latest_qcdTemplate_12Jul21'
-INDIR=../input/vbf/merged_2021-07-14_vbfhinv_ULv8_05Feb21_DY_W_kfac_update
+INDIR=../input/vbf/merged_2021-07-15_vbfhinv_ULv8_05Feb21_fixup_DY_W_kfacs
 INDIR="$(readlink -e $INDIR)"
 
 OUTDIR="../vbf/$(basename $INDIR)/${TAG}/root"

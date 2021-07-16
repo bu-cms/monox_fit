@@ -11,6 +11,11 @@ from HiggsAnalysis.CombinedLimit.ModelTools import *
 from utils.general import extract_year, extract_channel, is_MC_bkg
 
 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
+
+# Silent mode for ROOFit
+ROOT.RooMsgService.instance().setStreamStatus(1,False)
+ROOT.RooMsgService.instance().setSilentMode(True)
+
 pjoin = os.path.join
 
 def cli_args():
@@ -42,7 +47,7 @@ def get_jes_file(category):
   # JES shape files for each category
   f_jes_dict = {
     '(monoj|monov).*': ROOT.TFile("sys/monoj_monov_shape_jes_uncs_smooth_{}.root".format(jer_suffix) ),
-    'vbf.*': ROOT.TFile("sys/vbf_shape_jes_uncs_smooth_{}.root".format(jer_suffix) )
+    'vbf.*': ROOT.TFile("sys/vbf_shape_jes_uncs_{}.root".format(jer_suffix) )
   }
   # Determine the relevant JES source file
   f_jes = None
@@ -64,8 +69,15 @@ def get_jes_variations(obj, f_jes, category):
 
   keynames = [x.GetName() for x in f_jes.GetListOfKeys()]
 
+
   if 'vbf' in category:
-    tag = 'ZJetsToNuNu'
+    # In VBF, we'll use two shapes for two types of processes:
+    # 1. Minor backgrounds (top, diboson) -> Use uncs derived from QCD Z(vv)
+    # 2. Signals (ggH, VBF and others) -> Use uncs derived from VBF H(inv)
+    if ('top' in obj.GetName()) or ('diboson' in obj.GetName()):
+        tag = 'ZJetsToNuNu'
+    else:
+        tag = 'VBF_HToInvisible'
     key_valid = lambda x: (tag in x) and (not 'jesTotal' in x)
     regex_to_remove = '{TAG}20\d\d_'.format(TAG=tag)
   else:
