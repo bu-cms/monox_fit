@@ -31,3 +31,6 @@ printlimits:
 
 plots:
 	python $(TOPDIR)/scripts/make_plots.py --crFit=$(crFit)
+
+upload:
+	bash $(TOPDIR)/scripts/upload_to_eos.sh $(versionTag)
