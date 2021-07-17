@@ -12,6 +12,8 @@ sys.path.append(os.path.abspath(os.path.join(DIR,"../makeWorkspace")))
 
 from parameters import flat_uncertainties
 
+pjoin = os.path.join
+
 setTDRStyle()
 
 def quadsum(*args):
@@ -444,9 +446,9 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.pdf")
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.png")
-    # c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.C")
+    for fformat in ['pdf', 'png']:
+        fname = region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.{}".format(fformat)
+        c.SaveAs(pjoin(outdir, fname))
 
     c.Close()
     f_mlfit.Close()
