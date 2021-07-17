@@ -6,7 +6,7 @@
 ARGS=("$@")
 CR_ONLY_FIT=$(echo $ARGS | cut -f2 -d=)   
 
-if [ $CR_ONLY_FIT ]
+if [ $CR_ONLY_FIT -eq 1 ]
 then
     OUTDIR="diagnosticsCROnlyFit"
     MASK_SIGNAL=1
