@@ -279,3 +279,7 @@ vbf_@YEAR_stat_error_ewk_singleelectron_bin5 param 0.0 1
 vbf_@YEAR_stat_error_ewk_singleelectron_bin6 param 0.0 1
 vbf_@YEAR_stat_error_ewk_singleelectron_bin7 param 0.0 1
 vbf_@YEAR_stat_error_ewk_singleelectron_bin8 param 0.0 1
+rateScale_QCD rateParam vbf_@YEAR_signal qcd @RATEPARAM
+rateScale_HFNoise rateParam vbf_@YEAR_signal qcd_hf @RATEPARAM
+nuisance edit freeze rateScale_QCD
+nuisance edit freeze rateScale_HFNoise
