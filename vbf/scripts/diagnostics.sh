@@ -24,6 +24,7 @@ for YEAR in 2017 2018; do
             --saveShapes \
             --saveWithUncertainties \
             --setParameters mask_vbf_${YEAR}_signal=${MASK_SIGNAL} \
+            --robustFit 1 \
             -n _vbf_${YEAR} \
             ../cards/card_vbf_${YEAR}.root
     python ${CMSSW_BASE}/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py \
