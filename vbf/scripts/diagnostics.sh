@@ -19,6 +19,11 @@ fi
 
 mkdir -p ${OUTDIR}
 pushd ${OUTDIR}
+
+# Print out the current version of the limit script
+FILEPATH="`dirname $0`/`basename $0`"
+cat ${FILEPATH} > "diagScript.sh"
+
 for YEAR in 2017 2018; do
     combine -M FitDiagnostics \
             --saveShapes \
