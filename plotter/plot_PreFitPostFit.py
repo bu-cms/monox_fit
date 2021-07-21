@@ -10,6 +10,18 @@ blind = False
 
 new_dic = defaultdict(dict)
 
+def get_ylim(region):
+  '''Get y-axis limit for the given region'''
+  mapping = {
+    'singlemuon' : (1e-3,1e3),
+    'singleelectron' : (1e-3,1e3),
+    'dimuon' : (1e-3,1e2),
+    'dielectron' : (1e-3,1e2),
+    'gjets' : (1e-3,1e3),
+    'signal' : (1e-3,1e3),
+  }
+  return mapping[region]
+
 def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=False):
 
   datalab = {"singlemuon":"Wmn", "dimuon":"Zmm", "gjets":"gjets", "signal":"signal", "singleelectron":"Wen", "dielectron":"Zee"}
@@ -214,7 +226,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     dummy.SetMaximum(50*dummy.GetMaximum())
   else:
     dummy.SetMaximum(25*dummy.GetMaximum())
-  dummy.SetMinimum(0.002)
+  dummy.GetYaxis().SetRangeUser(*get_ylim(region))
   dummy.GetYaxis().SetTitleOffset(1.15)
   dummy.Draw()
 
