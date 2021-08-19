@@ -11,8 +11,7 @@ lumi ={
     2017 : 41.5,
     2018: 59.7
 }
-# regions = ['singlemuon','dimuon','gjets','singleelectron','dielectron','signal']
-regions = ['singlemuon','dimuon','gjets','singleelectron','dielectron']
+regions = ['singlemuon','dimuon','gjets','singleelectron','dielectron','signal']
 procs = ['zmm','zee','w_weights','photon','wen','wmn']
 
 pjoin = os.path.join
