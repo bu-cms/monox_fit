@@ -50,11 +50,14 @@ def get_prefire_variations_for_vbf(obj, category):
   for keyname in keynames:
     variation = re.sub(regex_to_remove, '', keyname)
     varied_name = obj.GetName() + "_" + variation
-    print(varied_name)
     varied_obj = obj.Clone(varied_name)
     varied_obj.Multiply(f_pref.Get(keyname))
+    varied_obj.SetDirectory(0)
     varied_hists[varied_name] = varied_obj
   
+  if f_pref:
+    f_pref.Close()
+
   return varied_hists
 
 def get_jes_file(category):
@@ -106,7 +109,7 @@ def get_jes_variations(obj, f_jes, category):
     variation = re.sub(regex_to_remove, '', key)
     varied_name = obj.GetName()+"_"+variation
     varied_obj = obj.Clone(varied_name)
-      # Multiply by JES factor to get the varied yields
+    # Multiply by JES factor to get the varied yields
     varied_obj.Multiply(f_jes.Get(key))
     # Save the varied histogram into a dict
     varied_hists[varied_name] = varied_obj
@@ -506,7 +509,6 @@ def create_workspace(fin, fout, category, args):
       
       if year == '2017' and 'vbf' in category and is_signal:
         pref_varied_hists = get_prefire_variations_for_vbf(obj, category)
-        print(pref_varied_hists)
         write_dict(pref_varied_hists)
 
       # TODO: For now, don't do any of the following for VBF
