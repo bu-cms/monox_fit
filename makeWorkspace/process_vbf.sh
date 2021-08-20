@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TAG='latest_qcdTemplate_02Aug21'
+TAG='20Aug21_prefUpdate'
 INDIR=../input/vbf/merged_2021-08-18_vbfhinv_ULv8_05Feb21_NLO_VJets
 INDIR="$(readlink -e $INDIR)"
 

@@ -40,6 +40,23 @@ def cli_args():
 
     return args
 
+def get_prefire_variations_for_vbf(obj, category):
+  '''Prefire shape uncertainties for VBF 2017. Uses the signal shape!'''
+  f_pref = ROOT.TFile('./sys/vbf_prefire_uncs.root')
+  varied_hists = {}
+  keynames = [x.GetName() for x in f_pref.GetListOfKeys()]
+
+  regex_to_remove = 'VBF_HToInvisible_2017_'
+  for keyname in keynames:
+    variation = re.sub(regex_to_remove, '', keyname)
+    varied_name = obj.GetName() + "_" + variation
+    print(varied_name)
+    varied_obj = obj.Clone(varied_name)
+    varied_obj.Multiply(f_pref.Get(keyname))
+    varied_hists[varied_name] = varied_obj
+  
+  return varied_hists
+
 def get_jes_file(category):
   '''Get the relevant JES source file for the given category.'''
   # By default: Get the uncertainties with smearing for VBF, the opposite for monojet
@@ -481,6 +498,16 @@ def create_workspace(fin, fout, category, args):
       # JES variations: Get them from the source file and save them to workspace
       jes_varied_hists = get_jes_variations(obj, f_jes, category)
       write_dict(jes_varied_hists)
+
+      # Prefire variations for 2017 (for signals only!)
+      m = re.match(".*(201(6|7|8)).*", category)
+      year = m.groups()[0]
+      is_signal = bool(re.match('signal_(vbf|ggh|ggzh|wh|zh|tth).*', obj.GetName()))
+      
+      if year == '2017' and 'vbf' in category and is_signal:
+        pref_varied_hists = get_prefire_variations_for_vbf(obj, category)
+        print(pref_varied_hists)
+        write_dict(pref_varied_hists)
 
       # TODO: For now, don't do any of the following for VBF
       if not "vbf" in category:
