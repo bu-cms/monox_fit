@@ -219,6 +219,10 @@ def get_signal_theory_variations(obj, category):
   m = re.match('.*S3D.*',real_process)
   if m:
     process_for_unc = 'ggh'
+  
+  m = re.match('.*svj.*',real_process)
+  if m:
+    process_for_unc = 'ggh'
 
   if not process_for_unc:
     return {}
@@ -250,7 +254,7 @@ def get_stat_variations(obj, category):
 
 
   histograms = {}
-  if any([x in name for x in ['scalar','pseudo','lq','axial','vector','add','S3D','vbf','ggh','zh','wh','ggzh']]):
+  if any([x in name for x in ['scalar','pseudo','lq','axial','vector','add','S3D','vbf','ggh','zh','wh','ggzh','svj']]):
     return {}
 
   for ibin in range(1,obj.GetNbinsX()+1):
