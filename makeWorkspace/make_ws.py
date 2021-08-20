@@ -40,6 +40,18 @@ def cli_args():
 
     return args
 
+def get_pileup_variations_for_vbf(obj, category, year):
+  '''PU shape uncertainties per process.'''
+  f_pu = ROOT.TFile('./sys/vbf_pileup_uncs.root')
+  varied_hists = {}
+  objname = obj.GetName()
+  keynames = [x.GetName() for x in f_pu.GetListOfKeys() if year in x]
+
+  filterunc = lambda histname: histname in keynames 
+  hname = list(filter(filterunc, keynames))
+  if len(hname) == 0:
+    return  
+
 def get_prefire_variations_for_vbf(obj, category):
   '''Prefire shape uncertainties for VBF 2017. Uses the signal shape!'''
   f_pref = ROOT.TFile('./sys/vbf_prefire_uncs.root')
@@ -510,6 +522,23 @@ def create_workspace(fin, fout, category, args):
       if year == '2017' and 'vbf' in category and is_signal:
         pref_varied_hists = get_prefire_variations_for_vbf(obj, category)
         write_dict(pref_varied_hists)
+
+      # Pileup uncertainties
+      f_pu = ROOT.TFile('./sys/vbf_pileup_uncs.root')
+      pu_histnames = [x.GetName() for x in f_pu.GetListOfKeys() if year in x.GetName()]
+      objname = obj.GetName()
+      keynames = list(filter(lambda x: objname in x, pu_histnames))
+      if len(keynames) > 0:
+        pu_varied_hists = {}
+
+        for keyname in keynames:
+          variation = 'CMS_pileupUp' if 'pileup_up' in keyname else 'CMS_pileupDown'
+          varied_name = objname+"_"+variation
+          varied_obj = obj.Clone(varied_name)
+          varied_obj.Multiply(f_pu.Get(keyname))
+          pu_varied_hists[varied_name] = varied_obj
+
+        write_dict(pu_varied_hists)
 
       # TODO: For now, don't do any of the following for VBF
       if not "vbf" in category:
