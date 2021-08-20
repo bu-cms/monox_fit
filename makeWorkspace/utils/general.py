@@ -66,7 +66,8 @@ def is_MC_bkg(name):
             "axial",
             "vector",
             "add",
-            "S3D"
+            "S3D",
+            "svj"
             ]
     if name in model_bkg_list:
         return False
