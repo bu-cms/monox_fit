@@ -1,7 +1,7 @@
 import ROOT
 from counting_experiment import *
 from W_constraints import do_stat_unc, add_variation, add_variation_flat_localized
-from utils.jes_utils import get_jes_variations, get_jes_jer_source_file_for_tf
+from utils.jes_utils import get_jes_variations, get_jes_jer_source_file_for_tf, jes_nuisance_name
 from utils.mistag import determine_region_wp,mistag_scale_and_flip
 import re
 ROOT.RooMsgService.instance().setSilentMode(True)
@@ -348,21 +348,48 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
   print "VARIATIONS"
   print jet_variations
   for var in jet_variations:
-    add_variation(WZScales, fjes, 'znunu_over_wlnu{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "w_weights_%s_%s_Up"%(cid, var), _fOut)
-    add_variation(WZScales, fjes, 'znunu_over_wlnu{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "w_weights_%s_%s_Down"%(cid, var), _fOut)
-    CRs[3].add_nuisance_shape(var,_fOut, functype='quadratic')
+    nuisance = jes_nuisance_name(var)
 
-    add_variation(ZmmScales, fjes, 'znunu_over_zmumu{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "zmm_weights_%s_%s_Up"%(cid, var), _fOut)
-    add_variation(ZmmScales, fjes, 'znunu_over_zmumu{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "zmm_weights_%s_%s_Down"%(cid, var), _fOut)
-    CRs[1].add_nuisance_shape(var,_fOut, functype='quadratic')
+    for direction in 'Up', 'Down':
+      filler_for_jes = {
+        "CATEGORY" : cid,
+        "YEAR" : year - 2000,
+        "VARIATION" : var,
+        "NUISANCE" : nuisance,
+        "DIRECTION" : direction
+      }
 
-    add_variation(ZeeScales, fjes, 'znunu_over_zee{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "zee_weights_%s_%s_Up"%(cid, var), _fOut)
-    add_variation(ZeeScales, fjes, 'znunu_over_zee{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "zee_weights_%s_%s_Down"%(cid, var), _fOut)
-    CRs[2].add_nuisance_shape(var,_fOut, functype='quadratic')
-
-    add_variation(PhotonScales, fjes, 'znunu_over_gjets{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "photon_weights_%s_%s_Up"%(cid, var), _fOut)
-    add_variation(PhotonScales, fjes, 'znunu_over_gjets{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "photon_weights_%s_%s_Down"%(cid, var), _fOut)
-    CRs[0].add_nuisance_shape(var,_fOut, functype='quadratic')
+      add_variation(
+                    nominal=WZScales,
+                    unc_file=fjes,
+                    unc_name='znunu_over_wlnu{YEAR}_qcd_{VARIATION}{DIRECTION}'.format(**filler_for_jes),
+                    new_name="w_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
+                    outfile=_fOut
+                    )
+      add_variation(
+                    nominal=ZmmScales,
+                    unc_file=fjes,
+                    unc_name='znunu_over_zmumu{YEAR}_qcd_{VARIATION}{DIRECTION}'.format(**filler_for_jes),
+                    new_name="zmm_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
+                    outfile=_fOut
+                    )
+      add_variation(
+                    nominal=ZeeScales,
+                    unc_file=fjes,
+                    unc_name='znunu_over_zee{YEAR}_qcd_{VARIATION}{DIRECTION}'.format(**filler_for_jes),
+                    new_name="zee_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
+                    outfile=_fOut
+                  )
+      add_variation(
+                    nominal=PhotonScales,
+                    unc_file=fjes,
+                    unc_name='znunu_over_gjets{YEAR}_qcd_{VARIATION}{DIRECTION}'.format(**filler_for_jes),
+                    new_name="photon_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
+                    outfile=_fOut
+                    )
+      filler_for_jes = None
+    for cr in CRs:
+      cr.add_nuisance_shape(nuisance,_fOut, functype='quadratic')
 
   # Photon scale
   fphotonscale = ROOT.TFile("sys/photon_scale_unc.root")

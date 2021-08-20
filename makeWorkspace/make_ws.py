@@ -9,7 +9,7 @@ from collections import defaultdict
 import ROOT
 from HiggsAnalysis.CombinedLimit.ModelTools import *
 from utils.general import extract_year, extract_channel, is_MC_bkg
-
+from utils.jes_utils import jes_nuisance_name
 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
 pjoin = os.path.join
 
@@ -66,7 +66,7 @@ def get_jes_variations(obj, f_jes, category):
 
   if 'vbf' in category:
     tag = 'ZJetsToNuNu'
-    key_valid =lambda x: (tag in x) and (not 'jesTotal' in x), keynames
+    key_valid = lambda x: (tag in x) and (not 'jesTotal' in x), keynames
     regex_to_remove = '{TAG}20\d\d_'.format(TAG=tag)
   else:
     channel = 'monov' if 'monov' in category else 'monojet'
@@ -74,9 +74,9 @@ def get_jes_variations(obj, f_jes, category):
     regex_to_remove = "{CHANNEL}_20\d\d_".format(CHANNEL=channel)
 
   for key in filter(key_valid, keynames):
-    variation = re.sub(regex_to_remove, '', key)
-    varied_name = obj.GetName()+"_"+variation
-    varied_obj = obj.Clone(varied_name)
+    variation   = re.sub(regex_to_remove, '', key)
+    varied_name = obj.GetName()+"_"+jes_nuisance_name(variation)
+    varied_obj  = obj.Clone(varied_name)
       # Multiply by JES factor to get the varied yields
     varied_obj.Multiply(f_jes.Get(key))
     # Save the varied histogram into a dict

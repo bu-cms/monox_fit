@@ -1,6 +1,6 @@
 import ROOT
 from counting_experiment import *
-from utils.jes_utils import get_jes_variations, get_jes_jer_source_file_for_tf
+from utils.jes_utils import get_jes_variations, get_jes_jer_source_file_for_tf, jes_nuisance_name
 from utils.general import read_key_for_year, get_nuisance_name
 from parameters import flat_uncertainties
 import re
@@ -77,6 +77,8 @@ def add_variation_from_histogram(nominal, factor, new_name, outfile, invert=Fals
 
 def add_variation(nominal, unc_file, unc_name, new_name, outfile, invert=False, scale=1):
   factor = unc_file.Get(unc_name)
+  if not factor:
+    raise RuntimeError("Could not find variation histogram '{0}' in file '{1}'".format(unc_name, unc_file.GetName()))
   add_variation_from_histogram(
                                nominal=nominal,
                                factor=factor,
@@ -260,16 +262,36 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
   jet_variations = get_jes_variations(fjes, year)
 
   for var in jet_variations:
-    add_variation(WScales, fjes, 'wlnu_over_wmunu{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "wmn_weights_%s_%s_Up"%(cid, var), _fOut)
-    add_variation(WScales, fjes, 'wlnu_over_wmunu{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "wmn_weights_%s_%s_Down"%(cid, var), _fOut)
-    CRs[0].add_nuisance_shape(var,_fOut, functype='quadratic')
+    nuisance = jes_nuisance_name(var)
 
-    add_variation(WScales_e, fjes, 'wlnu_over_wenu{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "wen_weights_%s_%s_Up"%(cid, var), _fOut)
-    add_variation(WScales_e, fjes, 'wlnu_over_wenu{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "wen_weights_%s_%s_Down"%(cid, var), _fOut)
-    CRs[1].add_nuisance_shape(var,_fOut, functype='quadratic')
+    for direction in 'Up', 'Down':
+      filler_for_jes = {
+        "CATEGORY" : cid,
+        "YEAR" : year - 2000,
+        "NUISANCE" : nuisance,
+        "VARIATION" : var,
+        "DIRECTION" : direction
+      }
+      add_variation(
+                    nominal=WScales,
+                    unc_file=fjes,
+                    unc_name='wlnu_over_wmunu{YEAR}_qcd_{VARIATION}Up'.format(**filler_for_jes),
+                    new_name="wmn_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
+                    outfile=_fOut
+                    )
+      add_variation(
+                    nominal=WScales_e,
+                    unc_file=fjes,
+                    unc_name='wlnu_over_wenu{YEAR}_qcd_{VARIATION}Up'.format(**filler_for_jes),
+                    new_name="wen_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
+                    outfile=_fOut
+                    )
+      filler_for_jes = None
+    for cr_id in range(2):
+      CRs[cr_id].add_nuisance_shape(nuisance,_fOut, functype='quadratic')
 
   # PDF uncertainties
-    fpdf = ROOT.TFile("sys/tf_pdf_unc.root")
+  fpdf = ROOT.TFile("sys/tf_pdf_unc.root")
 
   for direction in 'up', 'down':
     add_variation(
