@@ -370,8 +370,11 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
       legend.AddEntry(h_postfit['totalsig'], "S+B post-fit", "f")
     legend.SetNColumns(2)
 
-    legend_signal = TLegend(0.53, 0.65, 0.95, 0.75);
-    legend_signal.AddEntry(signal_hinv, "H(inv), BR = 25%")
+    if 'v' in category:
+      legend_signal = TLegend(0.55, 0.62, 0.97, 0.75);
+    else:
+      legend_signal = TLegend(0.55, 0.61, 0.97, 0.75);
+    legend_signal.AddEntry(signal_hinv, "H(inv), #bf{#it{#Beta}} = 25%")
     legend_signal.AddEntry(signal_axial, "#splitline{Axial, m_{med} = 2 TeV}{m_{#chi} = 1 GeV}")
     legend_signal.SetShadowColor(0);
     legend_signal.SetFillColor(0);
@@ -380,7 +383,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     legend_signal.SetLineStyle(0);
     legend_signal.SetBorderSize(0)
 
-    legend_signal.SetEntrySeparation(0.1)
+    legend_signal.SetEntrySeparation(1.5)
     legend_signal.SetTextSize(0.45*c.GetTopMargin())
     legend_signal.Draw("same")
   else:
@@ -388,7 +391,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     legend.AddEntry(h_data,"Data","elp")
     legend.AddEntry(h_all_postfit, "Post-fit ("+legname+")", "l")
     legend.AddEntry(h_all_prefit, "Pre-fit ("+legname+")", "l")
-    legend.AddEntry(h_other_prefit, "Other Backgrounds", "f")
+    legend.AddEntry(h_other_prefit, "Other backgrounds", "f")
 
   legend.SetShadowColor(0);
   legend.SetFillColor(0);
@@ -429,6 +432,9 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   # if region is "signal":
   categoryLabel.DrawLatex(0.2,0.83,channel);
   categoryLabel.DrawLatex(0.2,0.80,str(year));
+  # else:
+  #   categoryLabel.DrawLatex(0.15,0.87,channel);
+  #   categoryLabel.DrawLatex(0.15,0.84,str(year));
   categoryLabel.Draw("same");
 
 
@@ -680,9 +686,9 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     dummy3.SetBinContent(i,1.0)
   dummy3.GetYaxis().SetTitle("#frac{(Data-Pred.)}{#sigma}")
   if region in 'signal':
-      dummy3.GetXaxis().SetTitle("p_{T}^{miss} [GeV]"  if 'mono' in category else "M_{jj} [GeV]")
+      dummy3.GetXaxis().SetTitle("p_{T}^{miss} (GeV)"  if 'mono' in category else "M_{jj} [GeV]")
   else:
-    dummy3.GetXaxis().SetTitle("Recoil [GeV]" if 'mono' in category else "M_{jj} [GeV]")
+    dummy3.GetXaxis().SetTitle("Hadronic recoil (GeV)" if 'mono' in category else "M_{jj} [GeV]")
   dummy3.SetLineColor(0)
   dummy3.SetMarkerColor(0)
   dummy3.SetLineWidth(0)
@@ -715,7 +721,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   if not os.path.exists(outdir):
     os.makedirs(outdir)
 
-  latex2.SetTextSize(0.6*c.GetTopMargin())
+  latex2.SetTextSize(0.75*c.GetTopMargin())
   latex2.SetTextFont(42)
   latex2.SetTextAlign(11) # align right
 
@@ -723,11 +729,12 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
   c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + ".pdf")
   c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + ".png")
   t.Delete()
-  t = latex2.DrawLatex(0.15, 0.87, "#bf{CMS} #it{Preliminary}")
+
+  t = latex2.DrawLatex(0.15, 0.42, "#bf{CMS} #it{Preliminary}")
   c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + "_preliminary.pdf")
   c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + "_preliminary.png")
   t.Delete()
-  t = latex2.DrawLatex(0.15, 0.87, "#bf{CMS} #it{Supplementary}")
+  t = latex2.DrawLatex(0.15, 0.42, "#bf{CMS} #it{Supplementary}")
   c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + "_supplementary.pdf")
   c.SaveAs(outdir+"/"+category+"_PULLS_MASKED_prefit_postfit_"+region+"_" + str(year) + "_" + fit + "_supplementary.png")
 

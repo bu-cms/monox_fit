@@ -40,12 +40,12 @@ def data_validation_plots():
         dataValidation("combined",  "combinedW",category, ws_file, fitdiag_file, outdir,lumi[year],year)
         
         # Split by flavor
-        dataValidation("dimuon",        "singlemuon",    category, ws_file, fitdiag_file, outdir,lumi[year],year)
-        dataValidation("dielectron",    "singleelectron",category, ws_file, fitdiag_file, outdir,lumi[year],year)
-        dataValidation("singleelectron","gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
-        dataValidation("singlemuon",    "gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
-        dataValidation("dielectron",    "gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
-        dataValidation("dimuon",        "gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
+        # dataValidation("dimuon",        "singlemuon",    category, ws_file, fitdiag_file, outdir,lumi[year],year)
+        # dataValidation("dielectron",    "singleelectron",category, ws_file, fitdiag_file, outdir,lumi[year],year)
+        # dataValidation("singleelectron","gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
+        # dataValidation("singlemuon",    "gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
+        # dataValidation("dielectron",    "gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
+        # dataValidation("dimuon",        "gjets",         category, ws_file, fitdiag_file, outdir,lumi[year],year)
 
         # Mono-V
         for wp in ['tight','loose']:
@@ -58,22 +58,22 @@ def data_validation_plots():
 
 def postfit_plots():
     for year in [2017,2018]:
-        # CR-only
-        fitdiag_file = 'diagnostics_bkp/fitDiagnostics_monojet_monov_combined.root'
-        outdir       = './plots/combined_{year}/'.format(year=year)
+        # # CR-only
+        # fitdiag_file = 'diagnostics_bkp/fitDiagnostics_monojet_monov_combined.root'
+        # outdir       = './plots/combined_{year}/'.format(year=year)
 
-        # Monojet
-        ws_file      = "root/ws_monojet.root"
-        category = "monojet_{YEAR}".format(YEAR=year)
-        for region in regions:
-            plotPreFitPostFit(region,     category,ws_file, fitdiag_file, outdir, lumi[year], year)
+        # # Monojet
+        # ws_file      = "root/ws_monojet.root"
+        # category = "monojet_{YEAR}".format(YEAR=year)
+        # for region in regions:
+        #     plotPreFitPostFit(region,     category,ws_file, fitdiag_file, outdir, lumi[year], year)
 
-        # Mono-V
-        for wp in ['tight','loose']:
-            ws_file  = "root/ws_monov_nominal_{WP}.root".format(WP=wp)
-            category = 'monov{WP}_{YEAR}'.format(WP=wp,YEAR=year)
-            for region in regions:
-                plotPreFitPostFit(region,category,ws_file, fitdiag_file, outdir, lumi[year], year)
+        # # Mono-V
+        # for wp in ['tight','loose']:
+        #     ws_file  = "root/ws_monov_nominal_{WP}.root".format(WP=wp)
+        #     category = 'monov{WP}_{YEAR}'.format(WP=wp,YEAR=year)
+        #     for region in regions:
+        #         plotPreFitPostFit(region,category,ws_file, fitdiag_file, outdir, lumi[year], year)
 
         # CR+SR
         fitdiag_file = 'diagnostics_condor_3/fitDiagnostics_monojet_monov_combined_unblind.root'
@@ -96,5 +96,5 @@ def postfit_plots():
 
 
 # nuisance_plots()
-# postfit_plots()
-data_validation_plots()
+postfit_plots()
+# data_validation_plots()

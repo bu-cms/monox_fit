@@ -370,6 +370,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     h_clone.Draw("e2")
 
     h_prefit[region1].SetLineColor(2)
+    h_prefit[region1].SetLineWidth(2)
     h_prefit[region1].Draw("samehist")
     h_data_1.SetLineColor(1)
     h_data_1.SetMarkerColor(1)
@@ -404,7 +405,9 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     latex2.SetTextFont(42)
     latex2.SetTextAlign(31) # align right
     latex2.DrawLatex(0.94, 0.95,"{LUMI:.1f} fb^{{-1}} (13 TeV)".format(LUMI=lumi))
-    latex2.DrawLatex(0.25, 0.95,"{YEAR:.0f}".format(YEAR=year))
+
+    latex2.SetTextAlign(13)
+    latex2.DrawLatex(0.2, 0.82,"{YEAR:.0f}".format(YEAR=year))
 
     latex2.SetTextSize(0.6*c.GetTopMargin())
     latex2.SetTextFont(52)
@@ -455,7 +458,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
             ratiosys.SetBinError(hbin+1,h_clone.GetBinError(hbin+1)/h_clone.GetBinContent(hbin+1))
 
     dummy2.GetYaxis().SetTitle("Data / Pred.")
-    dummy2.GetXaxis().SetTitle("Hadronic recoil p_{T} [GeV]" if "mono" in category else  "M_{jj} [GeV]")
+    dummy2.GetXaxis().SetTitle("Hadronic recoil p_{T} (GeV)" if "mono" in category else  "M_{jj} [GeV]")
     dummy2.GetXaxis().SetTitleOffset(1.15)
     dummy2.GetXaxis().SetTitleSize(0.05)
     dummy2.GetXaxis().SetLabelSize(0.04)
@@ -514,7 +517,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    latex2.SetTextSize(0.6*c.GetTopMargin())
+    latex2.SetTextSize(0.75*c.GetTopMargin())
     latex2.SetTextFont(42)
     latex2.SetTextAlign(11) # align right
     t = latex2.DrawLatex(0.200, 0.95, "#bf{CMS}")
