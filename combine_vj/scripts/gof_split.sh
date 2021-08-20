@@ -1,9 +1,13 @@
 mkdir -p gof
 pushd gof
+<<<<<<< Updated upstream
 
 #remove limit on stack size to prevent related segfault
 ulimit -s unlimited
 
+=======
+ulimit -s unlimited
+>>>>>>> Stashed changes
 function gof() {
     YEAR=$1
     MASK=$2
@@ -51,16 +55,16 @@ NJOBS=60
 
 for YEAR in 2017 2018 combined; do
     gof "${YEAR}" "rgx{mask_.*_signal}=0" "nominal_unblind" "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*_signal}=0,rgx{mask_.*loose.*}=1,rgx{mask_.*tight.*}=1"     "monojet_unblind" "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*monojet.*}=1"                         "monov_unblind"   "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*monojet.*}=1,rgx{mask_.*tight.*}=1"   "loose_unblind"   "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*monojet.*}=1,rgx{mask_.*loose.*}=1"   "tight_unblind"   "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*_signal}=0,rgx{mask_.*loose.*}=1,rgx{mask_.*tight.*}=1"     "monojet_unblind" "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*monojet.*}=1"                         "monov_unblind"   "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*monojet.*}=1,rgx{mask_.*tight.*}=1"   "loose_unblind"   "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*monojet.*}=1,rgx{mask_.*loose.*}=1"   "tight_unblind"   "${NJOBS}" &
 
     gof "${YEAR}" "rgx{mask_.*_signal}=1" "nominal" "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*loose.*}=1,rgx{mask_.*tight.*}=1"     "monojet" "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*monojet.*}=1"                         "monov"   "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*monojet.*}=1,rgx{mask_.*tight.*}=1"   "loose"   "${NJOBS}" &
-    gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*monojet.*}=1,rgx{mask_.*loose.*}=1"   "tight"   "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*loose.*}=1,rgx{mask_.*tight.*}=1"     "monojet" "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*monojet.*}=1"                         "monov"   "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*monojet.*}=1,rgx{mask_.*tight.*}=1"   "loose"   "${NJOBS}" &
+    # gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*monojet.*}=1,rgx{mask_.*loose.*}=1"   "tight"   "${NJOBS}" &
 
 #     # gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*photon}=1" "no_photon"    "${NJOBS}"
 #     # gof "${YEAR}" "rgx{mask_.*_signal}=1,rgx{mask_.*_dielec}=1,rgx{mask_.*_dimuon}=1" "no_z"    "${NJOBS}"

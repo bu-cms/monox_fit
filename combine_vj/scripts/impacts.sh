@@ -6,18 +6,16 @@ do_impacts(){
     mkdir -p ${YEAR}_${SIGNAL}
     pushd ${YEAR}_${SIGNAL}
     TAG=task
-    COMMON_OPTS="-t -1 --expectSignal=${SIGNAL} --parallel=4 --rMin=-1 --autoRange 5 --squareDistPoiStep --setParameters LUMISCALE=1 --freezeParameters LUMISCALE --cminDefaultMinimizerStrategy 0"
+    COMMON_OPTS="-t -1 --expectSignal=${SIGNAL} --parallel=4 --rMin=-1 --autoRange 5 --squareDistPoiStep --setParameters LUMISCALE=1 --freezeParameters LUMISCALE --cminDefaultMinimizerStrategy 0 --robustFit 1 --robustHesse 1"
     combineTool.py -M Impacts \
                    -d ${CARD} \
                    -m 125 \
                    --doInitialFit \
-                   --robustFit 1 \
                    ${COMMON_OPTS}
 
     # Submit the hard work to condor
     combineTool.py -M Impacts -d ${CARD} \
                    -m 125 \
-                   --robustFit 1 \
                    --doFits \
                    --job-mode condor \
                    --task-name ${TAG} \
