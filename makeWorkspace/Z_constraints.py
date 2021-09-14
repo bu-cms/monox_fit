@@ -173,7 +173,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
       continue
     # Gamma uncertainty on Z/gamma ratio
     for variation_index in range(2):
-      name = 'CMS_eff{YEAR}_vmistag_g_stat_{SF_WP}_{INDEX}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
+      name = 'CMS_eff_vmistag_g_stat_{SF_WP}_{INDEX}_{YEAR}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
       for direction in 'up','down':
         add_variation(
           PhotonScales,
@@ -188,7 +188,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
 
     # Z uncertainty on Z/gamma ratio
     for variation_index in range(2):
-      name = 'CMS_eff{YEAR}_vmistag_z_stat_{SF_WP}_{INDEX}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
+      name = 'CMS_eff_vmistag_z_stat_{SF_WP}_{INDEX}_{YEAR}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
       for direction in 'up','down':
         add_variation(
           PhotonScales,
@@ -203,7 +203,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
 
     # Z uncertainty on Z/W ratio
     for variation_index in range(2):
-      name = 'CMS_eff{YEAR}_vmistag_z_stat_{SF_WP}_{INDEX}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
+      name = 'CMS_eff_vmistag_z_stat_{SF_WP}_{INDEX}_{YEAR}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
       for direction in 'up','down':
         add_variation(
           WZScales,
@@ -218,7 +218,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
 
     # W uncertainty on Z/W ratio
     for variation_index in range(2):
-      name = 'CMS_eff{YEAR}_vmistag_w_stat_{SF_WP}_{INDEX}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
+      name = 'CMS_eff_vmistag_w_stat_{SF_WP}_{INDEX}_{YEAR}'.format(INDEX=variation_index,  SF_WP=sf_wp, **filler)
       for direction in 'up','down':
         add_variation(
           WZScales,
@@ -323,23 +323,31 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
 
 
   fphotonid = r.TFile.Open("sys/photon_id_unc.root")
-  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_up".format(**filler), "photon_weights_%s_CMS_eff%s_pho_Up"%(cid, year), _fOut, invert=True, scale=2.0)
-  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_dn".format(**filler), "photon_weights_%s_CMS_eff%s_pho_Down"%(cid, year), _fOut, invert=True, scale=2.0)
-  CRs[0].add_nuisance_shape("CMS_eff{YEAR}_pho".format(**filler),_fOut, functype='quadratic')
-  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_extrap_up".format(**filler), "photon_weights_%s_CMS_eff%s_pho_extrap_Up"%(cid, year), _fOut, invert=True, scale=2.0)
-  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_extrap_dn".format(**filler), "photon_weights_%s_CMS_eff%s_pho_extrap_Down"%(cid, year), _fOut, invert=True, scale=2.0)
-  CRs[0].add_nuisance_shape("CMS_eff{YEAR}_pho_extrap".format(**filler),_fOut, functype='quadratic')
+  name = "CMS_eff_g_{YEAR}".format(YEAR=year)
+  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_up".format(**filler), "photon_weights_%s_%s_Up"%(cid, name), _fOut, invert=True, scale=2.0)
+  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_dn".format(**filler), "photon_weights_%s_%s_Down"%(cid, name), _fOut, invert=True, scale=2.0)
+  CRs[0].add_nuisance_shape(name,_fOut, functype='quadratic')
+
+  name = "CMS_eff_g_extrap_{YEAR}".format(YEAR=year)
+  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_extrap_up".format(**filler), "photon_weights_%s_%s_Up"%(cid, name), _fOut, invert=True, scale=2.0)
+  add_variation(PhotonScales, fphotonid, "{CHANNEL}_{YEAR}_photon_id_extrap_dn".format(**filler), "photon_weights_%s_%s_Down"%(cid, name), _fOut, invert=True, scale=2.0)
+  CRs[0].add_nuisance_shape(name,_fOut, functype='quadratic')
 
   felectronid = r.TFile.Open("sys/ele_id_unc.root")
-  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_stat_up".format(**filler), "zee_weights_%s_CMS_eff%s_e_stat_Up"%(cid, year), _fOut, invert=True, scale=2.0)
-  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_stat_dn".format(**filler), "zee_weights_%s_CMS_eff%s_e_stat_Down"%(cid, year), _fOut, invert=True, scale=2.0)
-  CRs[2].add_nuisance_shape("CMS_eff{YEAR}_e_stat".format(**filler),_fOut, functype='quadratic')
-  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_syst_up".format(**filler), "zee_weights_%s_CMS_eff%s_e_syst_Up"%(cid, year), _fOut, invert=True, scale=2.0)
-  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_syst_dn".format(**filler), "zee_weights_%s_CMS_eff%s_e_syst_Down"%(cid, year), _fOut, invert=True, scale=2.0)
-  CRs[2].add_nuisance_shape("CMS_eff{YEAR}_e_syst".format(**filler),_fOut, functype='quadratic')
-  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_reco_up".format(**filler), "zee_weights_%s_CMS_eff%s_e_reco_Up"%(cid, year), _fOut, invert=True)
-  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_reco_dn".format(**filler), "zee_weights_%s_CMS_eff%s_e_reco_Down"%(cid, year), _fOut, invert=True)
-  CRs[2].add_nuisance_shape("CMS_eff{YEAR}_e_reco".format(**filler),_fOut, functype='quadratic')
+  name = "CMS_eff_e_stat_{YEAR}".format(YEAR=year)
+  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_stat_up".format(**filler), "zee_weights_%s_%s_Up"%(cid, name), _fOut, invert=True, scale=2.0)
+  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_stat_dn".format(**filler), "zee_weights_%s_%s_Down"%(cid, name), _fOut, invert=True, scale=2.0)
+  CRs[2].add_nuisance_shape(name,_fOut, functype='quadratic')
+
+  name = "CMS_eff_e_syst_{YEAR}".format(YEAR=year)
+  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_syst_up".format(**filler), "zee_weights_%s_%s_Up"%(cid, name), _fOut, invert=True, scale=2.0)
+  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_id_syst_dn".format(**filler), "zee_weights_%s_%s_Down"%(cid, name), _fOut, invert=True, scale=2.0)
+  CRs[2].add_nuisance_shape(name,_fOut, functype='quadratic')
+
+  name = "CMS_eff_e_reco_{YEAR}".format(YEAR=year)
+  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_reco_up".format(**filler), "zee_weights_%s_%s_Up"%(cid, name), _fOut, invert=True)
+  add_variation(ZeeScales, felectronid, "{CHANNEL}_{YEAR}_2e_reco_dn".format(**filler), "zee_weights_%s_%s_Down"%(cid, name), _fOut, invert=True)
+  CRs[2].add_nuisance_shape(name,_fOut, functype='quadratic')
 
   # JES uncertainties
   fjes = get_jes_jer_source_file_for_tf(category='monojet')

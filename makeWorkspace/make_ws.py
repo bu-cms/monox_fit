@@ -99,10 +99,10 @@ def get_photon_id_variations(obj, category):
     "YEAR" : year,
   }
   name_map = {
-    "CMS_eff{YEAR}_phoUp"   : "{CHANNEL}_photon_id_up",
-    "CMS_eff{YEAR}_phoDown" : "{CHANNEL}_photon_id_dn",
-    "CMS_eff{YEAR}_pho_extrapUp"   : "{CHANNEL}_photon_id_extrap_up",
-    "CMS_eff{YEAR}_pho_extrapDown" : "{CHANNEL}_photon_id_extrap_dn",
+    "CMS_eff_g_{YEAR}Up"   : "{CHANNEL}_photon_id_up",
+    "CMS_eff_g_{YEAR}Down" : "{CHANNEL}_photon_id_dn",
+    "CMS_eff_g_extrap_{YEAR}Up"   : "{CHANNEL}_photon_id_extrap_up",
+    "CMS_eff_g_extrap_{YEAR}Down" : "{CHANNEL}_photon_id_extrap_dn",
   }
 
   varied_hists = {}
@@ -377,7 +377,8 @@ def get_mistag_variations(obj, category):
           "CHANNEL":channel
         }
 
-        variation_name = "CMS_eff{YEAR}_vmistag_{PROC}_stat_{SF_WP}_{INDEX}".format(**filler)
+        variation_name = "CMS_eff_vmistag_{PROC}_stat_{SF_WP}_{INDEX}_{YEAR}".format(**filler)
+
         for direction in 'up','down':
           var = f.Get('{PROC}_{SF_WP}_{YEAR}_{CHANNEL}_var{INDEX}_{DIRECTION}'.format(DIRECTION=direction, **filler))
           var = scale_variation_histogram(var, scale)
