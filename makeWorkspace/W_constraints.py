@@ -275,14 +275,14 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
       add_variation(
                     nominal=WScales,
                     unc_file=fjes,
-                    unc_name='wlnu_over_wmunu{YEAR}_qcd_{VARIATION}Up'.format(**filler_for_jes),
+                    unc_name='wlnu_over_wmunu{YEAR}_qcd_{VARIATION}{DIRECTION}'.format(**filler_for_jes),
                     new_name="wmn_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
                     outfile=_fOut
                     )
       add_variation(
                     nominal=WScales_e,
                     unc_file=fjes,
-                    unc_name='wlnu_over_wenu{YEAR}_qcd_{VARIATION}Up'.format(**filler_for_jes),
+                    unc_name='wlnu_over_wenu{YEAR}_qcd_{VARIATION}{DIRECTION}'.format(**filler_for_jes),
                     new_name="wen_weights_{CATEGORY}_{NUISANCE}_{DIRECTION}".format(**filler_for_jes),
                     outfile=_fOut
                     )
