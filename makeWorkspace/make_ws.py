@@ -468,7 +468,8 @@ def create_workspace(fin, fout, category, args):
     if type(obj) not in [ROOT.TH1D, ROOT.TH1F]:
       continue
     name = obj.GetName()
-
+    if any(x in name for x in ['scalar','pseudo','lq','axial','vector','add','S3D','svj']):
+      continue
     treat_empty(obj)
     treat_overflow(obj)
     write_obj(obj, name)
