@@ -141,7 +141,7 @@ def get_photon_qcd_variations(obj, category):
   func_up = lambda x: 1 + (unc-1)/550 *(x-250)
   func_dn = lambda x: 1 - (unc-1)/550 *(x-250)
 
-  varname = 'purity_fit_{YEAR}'.format(YEAR=year)
+  varname = 'CMS_fake_g_fit_{YEAR}'.format(YEAR=year)
 
   name = "{INITIAL}_{VARIATION}Up".format(INITIAL=obj.GetName(), VARIATION=varname)
   varied_obj = obj.Clone(name)
