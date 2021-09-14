@@ -11,26 +11,20 @@ for YEAR in 2017 2018; do
     cp ../../templates/monojet_template.txt ${CARD}
     sed -i "s|@YEAR|${YEAR}|g" ${CARD}
 
-     if [ $YEAR -eq 2017 ]; then
-        sed -i "s|@LUMIXY|1.008|g" ${CARD}
-        sed -i "s|@LUMILS|1.003|g" ${CARD}
-        sed -i "s|@LUMIBBD|1.006|g" ${CARD}
-        sed -i "s|@LUMIBCC|1.003|g" ${CARD}
-        sed -i "s|@LUMIGS|1.001|g" ${CARD}
-        sed -i "s|@LUMI|1.020|g" ${CARD}
-     elif [ $YEAR -eq 2018 ]; then
-        sed -i "s|@LUMIXY|1.02|g" ${CARD}
-        sed -i "s|@LUMILS|1.002|g" ${CARD}
-        sed -i "s|@LUMIBBD|1.002|g" ${CARD}
-        sed -i "s|@LUMIBCC|1.002|g" ${CARD}
-        sed -i "s|@LUMIGS|1.001|g" ${CARD}
-        sed -i "s|@LUMI|1.015|g" ${CARD}
-        sed -i "/prefiring/d" ${CARD}
-     fi
-     # affected by mistags in loose region with ratio of -1/20
-     sed -i "s|@MISTAGLOOSEW|0.999        |g"    ${CARD}
-     sed -i "s|@MISTAGLOOSEZ|0.998        |g"    ${CARD}
-     sed -i "s|@MISTAGLOOSEG|0.998        |g"    ${CARD}
+    if [ $YEAR -eq 2017 ]; then
+       sed -i "s|@LUMI_CORR_ALL|1.009         |g" ${CARD}
+       sed -i "s|@LUMI_CORR_1718|1.006          |g" ${CARD}
+       sed -i "s|@LUMI|1.020|g" ${CARD}
+    elif [ $YEAR -eq 2018 ]; then
+       sed -i "s|@LUMI_CORR_ALL|1.02          |g" ${CARD}
+       sed -i "s|@LUMI_CORR_1718|1.002          |g" ${CARD}
+       sed -i "s|@LUMI|1.015|g" ${CARD}
+       sed -i "/prefiring/d" ${CARD}
+    fi
+    # affected by mistags in loose region with ratio of -1/20
+    sed -i "s|@MISTAGLOOSEW|0.999        |g"    ${CARD}
+    sed -i "s|@MISTAGLOOSEZ|0.998        |g"    ${CARD}
+    sed -i "s|@MISTAGLOOSEG|0.998        |g"    ${CARD}
 
     sed -i "s|combined_model.root|../root/combined_model_monojet.root|g" ${CARD}
     sed -i "s|monojet_qcd_ws.root|../root/monojet_qcd_ws.root|g" ${CARD}

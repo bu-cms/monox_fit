@@ -15,19 +15,14 @@ for YEAR in 2017 2018; do
             sed -i "s/@WP/${WP}/g" ${CARD}
             sed -i "s|@YEAR|${YEAR}|g" ${CARD}
 
+
             if [ $YEAR -eq 2017 ]; then
-                sed -i "s|@LUMIXY|1.008|g" ${CARD}
-                sed -i "s|@LUMILS|1.003|g" ${CARD}
-                sed -i "s|@LUMIBBD|1.006|g" ${CARD}
-                sed -i "s|@LUMIBCC|1.003|g" ${CARD}
-                sed -i "s|@LUMIGS|1.001|g" ${CARD}
+                sed -i "s|@LUMI_CORR_ALL|1.009         |g" ${CARD}
+                sed -i "s|@LUMI_CORR_1718|1.006          |g" ${CARD}
                 sed -i "s|@LUMI|1.020|g" ${CARD}
             elif [ $YEAR -eq 2018 ]; then
-                sed -i "s|@LUMIXY|1.02|g" ${CARD}
-                sed -i "s|@LUMILS|1.002|g" ${CARD}
-                sed -i "s|@LUMIBBD|1.002|g" ${CARD}
-                sed -i "s|@LUMIBCC|1.002|g" ${CARD}
-                sed -i "s|@LUMIGS|1.001|g" ${CARD}
+                sed -i "s|@LUMI_CORR_ALL|1.02          |g" ${CARD}
+                sed -i "s|@LUMI_CORR_1718|1.002          |g" ${CARD}
                 sed -i "s|@LUMI|1.015|g" ${CARD}
                 sed -i "/prefiring/d" ${CARD}
             fi
