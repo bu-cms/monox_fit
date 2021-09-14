@@ -393,7 +393,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
 
   # Photon scale
   fphotonscale = ROOT.TFile("sys/photon_scale_unc.root")
-  var = "photon_scale_%s"%year
+  var = "CMS_scale_g_%s"%year
   add_variation(
                 PhotonScales,
                 fphotonscale,
