@@ -7,6 +7,9 @@ from HiggsAnalysis.CombinedLimit.ModelTools import *
 
 import ROOT as r
 
+# Silent mode for ROOFit
+r.RooMsgService.instance().setStreamStatus(1,False)
+r.RooMsgService.instance().setSilentMode(True)
 
 ROOT.gSystem.AddIncludePath("-I$CMSSW_BASE/src/ ");
 ROOT.gSystem.AddIncludePath("-I$ROOFITSYS/include");

@@ -12,7 +12,32 @@ sys.path.append(os.path.abspath(os.path.join(DIR,"../makeWorkspace")))
 
 from parameters import flat_uncertainties
 
+pjoin = os.path.join
+
 setTDRStyle()
+
+def get_ylims(region1, region2):
+    '''Get y-limits for the ratio plots (to fix scale).'''
+    if region1 is "combined" and region2 is "gjets":
+        return (0,0.4)
+    elif region1 is "combined" and region2 is "combinedW":
+        return (0,0.3)
+    elif region1 is "dielectron" and region2 is "gjets":
+        return (0,0.2)
+    elif region1 is "dimuon" and region2 is "gjets":
+        return (0,0.2)
+    elif region1 is "combinedW" and region2 is "gjets":
+        return (0,5)
+    elif region1 is "singleelectron" and region2 is "gjets":
+        return (0,2)
+    elif region1 is "singlemuon" and region2 is "gjets":
+        return (0,2.5)
+    elif region1 is "dielectron" and region2 is "singleelectron":
+        return (0,0.3)
+    elif region1 is "dimuon" and region2 is "singlemuon":
+        return (0,0.3)
+        
+    raise RuntimeError('Could not determine y-limits.')
 
 def quadsum(*args):
     """Quadratic sum"""
@@ -363,7 +388,9 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     h_clone.GetYaxis().SetTitleSize(0.05)
     h_clone.GetYaxis().SetLabelSize(0.04)
     h_clone.GetYaxis().SetTitleOffset(1.50)
-    h_clone.SetMinimum(0)
+
+    ylims = get_ylims(region1, region2)
+    h_clone.GetYaxis().SetRangeUser(*ylims)
 
     h_clone.SetMaximum(h_clone.GetMaximum()*2)
 
@@ -507,9 +534,9 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.pdf")
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.png")
-    c.SaveAs(outdir+region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.C")
+    for fformat in ['pdf', 'png']:
+        fname = region1+"_"+region2+"_cat_"+category+"_"+str(year)+"ratio.{}".format(fformat)
+        c.SaveAs(pjoin(outdir, fname))
 
     c.Close()
     f_mlfit.Close()
