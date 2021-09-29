@@ -180,6 +180,31 @@ def get_diboson_variations(obj, category, process):
     f.Close()
   return varied_hists
 
+def process_name_for_scale_nuisance(process):
+  if process == 'zh':
+    return 'ZH'
+  if process == 'wh':
+    return 'WH'
+  if process == 'vbf':
+    return 'qqH'
+  if process=='ggh':
+    return 'ggH'
+  if process=='ggzh':
+    return 'ggZH'
+  return process
+
+def theory_nuisance_name(process, unc_type, channel):
+  if unc_type=='scale':
+    return 'QCDscale_{NAME}_ACCEPT_{CHANNEL}'.format(NAME=process_name_for_scale_nuisance(process),CHANNEL=channel)
+  if unc_type=='pdf':
+    if process in ['vbf', 'zh', 'wh']:
+      return 'pdf_Higgs_qqbar_ACCEPT_{CHANNEL}'.format(CHANNEL=channel)
+    elif process in ['ggzh', 'ggh']:
+      return 'pdf_Higgs_gg_ACCEPT_{CHANNEL}'.format(CHANNEL=channel)
+    else:
+      return 'pdf_{PROCESS}'.format(PROCESS=process)
+  raise RuntimeError("Unknown uncertainty type: " + unc_type)
+
 def get_signal_theory_variations(obj, category):
   '''Return list of varied histograms from signal theory histogram file'''
   name = obj.GetName()
@@ -215,11 +240,11 @@ def get_signal_theory_variations(obj, category):
   m = re.match('lq_m\d+_d[\d,p]+',real_process)
   if m:
     process_for_unc = 'ggh'
-  
+
   m = re.match('.*S3D.*',real_process)
   if m:
     process_for_unc = 'ggh'
-  
+
   m = re.match('.*svj.*',real_process)
   if m:
     process_for_unc = 'ggh'
@@ -231,16 +256,11 @@ def get_signal_theory_variations(obj, category):
 
   for unctype in 'pdf','scale':
     for direction in 'Up','Down':
-      filler={'CHANNEL':channel, 'PROCESS_FOR_UNC':process_for_unc, 'UNCTYPE':unctype,'DIRECTION':direction, 'REAL_PROCESS':real_process}
-
-      if unctype=='scale':
-        name = 'signal_{REAL_PROCESS}_QCDscale_{REAL_PROCESS}_ACCEPT{DIRECTION}'.format(**filler)
-      elif unctype=='pdf':
-        name = 'signal_{REAL_PROCESS}_pdf_{REAL_PROCESS}_ACCEPT{DIRECTION}'.format(**filler)
-
+      nuisance = theory_nuisance_name(real_process, unctype, channel=channel[:5])
+      filler={'CHANNEL':channel, 'PROCESS_FOR_UNC':process_for_unc, 'UNCTYPE':unctype,'DIRECTION':direction, 'REAL_PROCESS':real_process, 'NUISANCE':nuisance}
+      name = 'signal_{REAL_PROCESS}_{NUISANCE}{DIRECTION}'.format(**filler)
       varname = '{CHANNEL}_{PROCESS_FOR_UNC}_{UNCTYPE}{DIRECTION}'.format(**filler)
       variation = f.Get(varname)
-      print varname, variation
 
       varied_obj = obj.Clone(name)
       varied_obj.Multiply(variation)
