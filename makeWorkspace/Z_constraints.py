@@ -312,14 +312,14 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
   # To take into account the anticorrelation between them
   if year == 2017:
     fpref = r.TFile.Open("sys/pref_unc.root")
+    nuisance = "CMS_prefire_2017"
+    add_variation(ZmmScales, fpref, "{CHANNEL}_pref_unc_z_over_mm".format(**filler), "zmm_weights_{CATEGORY}_{NUISANCE}_Up".format(CATEGORY=cid, NUISANCE=nuisance), _fOut)
+    add_variation(ZmmScales, fpref, "{CHANNEL}_pref_unc_z_over_mm".format(**filler), "zmm_weights_{CATEGORY}_{NUISANCE}_Down".format(CATEGORY=cid, NUISANCE=nuisance), _fOut,invert=True)
+    CRs[1].add_nuisance_shape(nuisance,_fOut, functype='quadratic')
 
-    add_variation(ZmmScales, fpref, "{CHANNEL}_pref_unc_z_over_mm".format(**filler), "zmm_weights_%s_prefiring_Up"%cid, _fOut)
-    add_variation(ZmmScales, fpref, "{CHANNEL}_pref_unc_z_over_mm".format(**filler), "zmm_weights_%s_prefiring_Down"%cid, _fOut,invert=True)
-    CRs[1].add_nuisance_shape("prefiring",_fOut, functype='quadratic')
-
-    add_variation(ZeeScales, fpref, "{CHANNEL}_pref_unc_z_over_ee".format(**filler), "zee_weights_%s_prefiring_Up"%cid, _fOut,invert=True)
-    add_variation(ZeeScales, fpref, "{CHANNEL}_pref_unc_z_over_ee".format(**filler), "zee_weights_%s_prefiring_Down"%cid, _fOut)
-    CRs[2].add_nuisance_shape("prefiring",_fOut, functype='quadratic')
+    add_variation(ZeeScales, fpref, "{CHANNEL}_pref_unc_z_over_ee".format(**filler), "zee_weights_{CATEGORY}_{NUISANCE}_Up".format(CATEGORY=cid, NUISANCE=nuisance), _fOut,invert=True)
+    add_variation(ZeeScales, fpref, "{CHANNEL}_pref_unc_z_over_ee".format(**filler), "zee_weights_{CATEGORY}_{NUISANCE}_Down".format(CATEGORY=cid, NUISANCE=nuisance), _fOut)
+    CRs[2].add_nuisance_shape(nuisance,_fOut, functype='quadratic')
 
 
   fphotonid = r.TFile.Open("sys/photon_id_unc.root")

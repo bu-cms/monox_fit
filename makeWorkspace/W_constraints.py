@@ -254,13 +254,14 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
   # To take into account the anticorrelation between them
   if year == 2017:
     fpref = r.TFile.Open("sys/pref_unc.root")
-    add_variation(WScales, fpref, "{CHANNEL}_pref_unc_w_over_m".format(**filler), "wmn_weights_%s_prefiring_Up"%cid, _fOut)
-    add_variation(WScales, fpref, "{CHANNEL}_pref_unc_w_over_m".format(**filler), "wmn_weights_%s_prefiring_Down"%cid, _fOut, invert=True)
-    CRs[0].add_nuisance_shape("prefiring",_fOut, functype='quadratic')
+    nuisance = "CMS_prefire_2017"
+    add_variation(WScales, fpref, "{CHANNEL}_pref_unc_w_over_m".format(**filler), "wmn_weights_{CATEGORY}_{NUISANCE}_Up".format(CATEGORY=cid, NUISANCE=nuisance), _fOut)
+    add_variation(WScales, fpref, "{CHANNEL}_pref_unc_w_over_m".format(**filler), "wmn_weights_{CATEGORY}_{NUISANCE}_Down".format(CATEGORY=cid, NUISANCE=nuisance), _fOut, invert=True)
+    CRs[0].add_nuisance_shape(nuisance,_fOut, functype='quadratic')
 
-    add_variation(WScales_e, fpref, "{CHANNEL}_pref_unc_w_over_e".format(**filler), "wen_weights_%s_prefiring_Up"%cid, _fOut, invert=True)
-    add_variation(WScales_e, fpref, "{CHANNEL}_pref_unc_w_over_e".format(**filler), "wen_weights_%s_prefiring_Down"%cid, _fOut)
-    CRs[1].add_nuisance_shape("prefiring",_fOut, functype='quadratic')
+    add_variation(WScales_e, fpref, "{CHANNEL}_pref_unc_w_over_e".format(**filler), "wen_weights_{CATEGORY}_{NUISANCE}_Up".format(CATEGORY=cid, NUISANCE=nuisance), _fOut, invert=True)
+    add_variation(WScales_e, fpref, "{CHANNEL}_pref_unc_w_over_e".format(**filler), "wen_weights_{CATEGORY}_{NUISANCE}_Down".format(CATEGORY=cid, NUISANCE=nuisance), _fOut)
+    CRs[1].add_nuisance_shape(nuisance,_fOut, functype='quadratic')
 
   # JES uncertainties
   fjes = get_jes_jer_source_file_for_tf(category='monojet')

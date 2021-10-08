@@ -24,7 +24,7 @@ for YEAR in 2017 2018; do
                 sed -i "s|@LUMI_CORR_ALL|1.02          |g" ${CARD}
                 sed -i "s|@LUMI_CORR_1718|1.002          |g" ${CARD}
                 sed -i "s|@LUMI|1.015|g" ${CARD}
-                sed -i "/prefiring/d" ${CARD}
+                sed -i "/prefire/d" ${CARD}
             fi
             if [ "$WP" == loose ]; then
                 sed -i "s|@VTAGLOOSE|1.10      |g"    ${CARD} 
@@ -132,7 +132,7 @@ for YEAR in 2017 2018; do
     #     sed -i "s|@LUMIBCC|1.02|g" ${CARD}
     #     sed -i "s|@LUMIGS|1.00|g" ${CARD}
     #     sed -i "s|@LUMI|1.015|g" ${CARD}
-    #     sed -i "/prefiring/d" ${CARD}
+    #     sed -i "/prefire/d" ${CARD}
     # fi
     # sed -i "s|@VTAGLOOSE|-         |g"    ${CARD} 
     # sed -i "s|@VTAGTIGHT|-         |g"    ${CARD} 

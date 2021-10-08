@@ -19,7 +19,7 @@ for YEAR in 2017 2018; do
        sed -i "s|@LUMI_CORR_ALL|1.02          |g" ${CARD}
        sed -i "s|@LUMI_CORR_1718|1.002          |g" ${CARD}
        sed -i "s|@LUMI|1.015|g" ${CARD}
-       sed -i "/prefiring/d" ${CARD}
+       sed -i "/prefire/d" ${CARD}
     fi
     # affected by mistags in loose region with ratio of -1/20
     sed -i "s|@MISTAGLOOSEW|0.999        |g"    ${CARD}
