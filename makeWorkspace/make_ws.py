@@ -9,7 +9,7 @@ from collections import defaultdict
 import ROOT
 from HiggsAnalysis.CombinedLimit.ModelTools import *
 from utils.general import extract_year, extract_channel, is_MC_bkg
-
+from utils.jes_utils import jes_nuisance_name
 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
 pjoin = os.path.join
 
@@ -66,7 +66,7 @@ def get_jes_variations(obj, f_jes, category):
 
   if 'vbf' in category:
     tag = 'ZJetsToNuNu'
-    key_valid =lambda x: (tag in x) and (not 'jesTotal' in x), keynames
+    key_valid = lambda x: (tag in x) and (not 'jesTotal' in x), keynames
     regex_to_remove = '{TAG}20\d\d_'.format(TAG=tag)
   else:
     channel = 'monov' if 'monov' in category else 'monojet'
@@ -74,9 +74,9 @@ def get_jes_variations(obj, f_jes, category):
     regex_to_remove = "{CHANNEL}_20\d\d_".format(CHANNEL=channel)
 
   for key in filter(key_valid, keynames):
-    variation = re.sub(regex_to_remove, '', key)
-    varied_name = obj.GetName()+"_"+variation
-    varied_obj = obj.Clone(varied_name)
+    variation   = re.sub(regex_to_remove, '', key)
+    varied_name = obj.GetName()+"_"+jes_nuisance_name(variation)
+    varied_obj  = obj.Clone(varied_name)
       # Multiply by JES factor to get the varied yields
     varied_obj.Multiply(f_jes.Get(key))
     # Save the varied histogram into a dict
@@ -99,10 +99,10 @@ def get_photon_id_variations(obj, category):
     "YEAR" : year,
   }
   name_map = {
-    "CMS_eff{YEAR}_phoUp"   : "{CHANNEL}_photon_id_up",
-    "CMS_eff{YEAR}_phoDown" : "{CHANNEL}_photon_id_dn",
-    "CMS_eff{YEAR}_pho_extrapUp"   : "{CHANNEL}_photon_id_extrap_up",
-    "CMS_eff{YEAR}_pho_extrapDown" : "{CHANNEL}_photon_id_extrap_dn",
+    "CMS_eff_g_{YEAR}Up"   : "{CHANNEL}_photon_id_up",
+    "CMS_eff_g_{YEAR}Down" : "{CHANNEL}_photon_id_dn",
+    "CMS_eff_g_extrap_{YEAR}Up"   : "{CHANNEL}_photon_id_extrap_up",
+    "CMS_eff_g_extrap_{YEAR}Down" : "{CHANNEL}_photon_id_extrap_dn",
   }
 
   varied_hists = {}
@@ -141,7 +141,7 @@ def get_photon_qcd_variations(obj, category):
   func_up = lambda x: 1 + (unc-1)/550 *(x-250)
   func_dn = lambda x: 1 - (unc-1)/550 *(x-250)
 
-  varname = 'purity_fit_{YEAR}'.format(YEAR=year)
+  varname = 'CMS_fake_g_fit_{YEAR}'.format(YEAR=year)
 
   name = "{INITIAL}_{VARIATION}Up".format(INITIAL=obj.GetName(), VARIATION=varname)
   varied_obj = obj.Clone(name)
@@ -180,6 +180,31 @@ def get_diboson_variations(obj, category, process):
     f.Close()
   return varied_hists
 
+def process_name_for_scale_nuisance(process):
+  if process == 'zh':
+    return 'ZH'
+  if process == 'wh':
+    return 'WH'
+  if process == 'vbf':
+    return 'qqH'
+  if process=='ggh':
+    return 'ggH'
+  if process=='ggzh':
+    return 'ggZH'
+  return process
+
+def theory_nuisance_name(process, unc_type, channel):
+  if unc_type=='scale':
+    return 'QCDscale_{NAME}_ACCEPT_{CHANNEL}'.format(NAME=process_name_for_scale_nuisance(process),CHANNEL=channel)
+  if unc_type=='pdf':
+    if process in ['vbf', 'zh', 'wh']:
+      return 'pdf_Higgs_qqbar_ACCEPT_{CHANNEL}'.format(CHANNEL=channel)
+    elif process in ['ggzh', 'ggh']:
+      return 'pdf_Higgs_gg_ACCEPT_{CHANNEL}'.format(CHANNEL=channel)
+    else:
+      return 'pdf_{PROCESS}'.format(PROCESS=process)
+  raise RuntimeError("Unknown uncertainty type: " + unc_type)
+
 def get_signal_theory_variations(obj, category):
   '''Return list of varied histograms from signal theory histogram file'''
   name = obj.GetName()
@@ -215,11 +240,15 @@ def get_signal_theory_variations(obj, category):
   m = re.match('lq_m\d+_d[\d,p]+',real_process)
   if m:
     process_for_unc = 'ggh'
-  
+
   m = re.match('.*S3D.*',real_process)
   if m:
     process_for_unc = 'ggh'
   
+  m = re.match('.*svj.*',real_process)
+  if m:
+    process_for_unc = 'ggh'
+
   m = re.match('.*svj.*',real_process)
   if m:
     process_for_unc = 'ggh'
@@ -231,16 +260,11 @@ def get_signal_theory_variations(obj, category):
 
   for unctype in 'pdf','scale':
     for direction in 'Up','Down':
-      filler={'CHANNEL':channel, 'PROCESS_FOR_UNC':process_for_unc, 'UNCTYPE':unctype,'DIRECTION':direction, 'REAL_PROCESS':real_process}
-
-      if unctype=='scale':
-        name = 'signal_{REAL_PROCESS}_QCDscale_{REAL_PROCESS}_ACCEPT{DIRECTION}'.format(**filler)
-      elif unctype=='pdf':
-        name = 'signal_{REAL_PROCESS}_pdf_{REAL_PROCESS}_ACCEPT{DIRECTION}'.format(**filler)
-
+      nuisance = theory_nuisance_name(real_process, unctype, channel=channel[:5])
+      filler={'CHANNEL':channel, 'PROCESS_FOR_UNC':process_for_unc, 'UNCTYPE':unctype,'DIRECTION':direction, 'REAL_PROCESS':real_process, 'NUISANCE':nuisance}
+      name = 'signal_{REAL_PROCESS}_{NUISANCE}{DIRECTION}'.format(**filler)
       varname = '{CHANNEL}_{PROCESS_FOR_UNC}_{UNCTYPE}{DIRECTION}'.format(**filler)
       variation = f.Get(varname)
-      print varname, variation
 
       varied_obj = obj.Clone(name)
       varied_obj.Multiply(variation)
@@ -377,7 +401,8 @@ def get_mistag_variations(obj, category):
           "CHANNEL":channel
         }
 
-        variation_name = "CMS_eff{YEAR}_vmistag_{PROC}_stat_{SF_WP}_{INDEX}".format(**filler)
+        variation_name = "CMS_eff_vmistag_{PROC}_stat_{SF_WP}_{INDEX}_{YEAR}".format(**filler)
+
         for direction in 'up','down':
           var = f.Get('{PROC}_{SF_WP}_{YEAR}_{CHANNEL}_var{INDEX}_{DIRECTION}'.format(DIRECTION=direction, **filler))
           var = scale_variation_histogram(var, scale)
@@ -468,7 +493,8 @@ def create_workspace(fin, fout, category, args):
     if type(obj) not in [ROOT.TH1D, ROOT.TH1F]:
       continue
     name = obj.GetName()
-
+    if any(x in name for x in ['scalar','pseudo','lq','axial','vector','add','S3D','svj']):
+      continue
     treat_empty(obj)
     treat_overflow(obj)
     write_obj(obj, name)

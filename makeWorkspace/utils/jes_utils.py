@@ -37,3 +37,11 @@ def get_jes_jer_source_file_for_tf(category):
         raise RuntimeError('Could not find a JES source file for category: {}'.format(category))
     
     return f_jes    
+
+def jes_nuisance_name(variable):
+    if variable.startswith('jer'):
+        return variable.replace("jer","CMS_res_j")
+    if 'jes' in variable:
+        return variable.replace("jes","CMS_scale_j_jes")
+    else:
+        raise RuntimeError("Could not derive nuisance name for variable: " + variable)
