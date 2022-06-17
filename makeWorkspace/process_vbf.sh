@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TAG='20Aug21_pileup_update'
+TAG='14Oct21_ZCorrections'
 INDIR=../input/vbf/merged_2021-08-18_vbfhinv_ULv8_05Feb21_NLO_VJets
 INDIR="$(readlink -e $INDIR)"
 
@@ -29,8 +29,8 @@ git diff >> ${INFOFILE}
 ./runModel.py ${WSFILE} --categories vbf_2017,vbf_2018 --out ${OUTDIR}/combined_model_vbf.root
 
 # Split for IC
-# ./runModel.py ${WSFILE} --categories vbf_2017 --out ${OUTDIR}/combined_model_vbf_forIC_2017.root --rename "mjj_MTR_2017"
-# ./runModel.py ${WSFILE} --categories vbf_2018 --out ${OUTDIR}/combined_model_vbf_forIC_2018.root --rename "mjj_MTR_2018"
+./runModel.py ${WSFILE} --categories vbf_2017 --out ${OUTDIR}/combined_model_vbf_forIC_2017.root --rename "mjj_MTR_2017"
+./runModel.py ${WSFILE} --categories vbf_2018 --out ${OUTDIR}/combined_model_vbf_forIC_2018.root --rename "mjj_MTR_2018"
 
 # Templates for QCD & HF estimation
 cp sys/vbf_qcd_nckw_ws_201*.root ${OUTDIR}

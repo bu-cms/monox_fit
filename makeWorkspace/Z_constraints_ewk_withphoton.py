@@ -7,7 +7,7 @@ from W_constraints import do_stat_unc, add_variation
 # First define simple string which will be used for the datacard
 model = "ewk_zjets"
 
-def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU"):
+def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrections=False):
 
   # Some setup
   _fin = _f.Get("category_%s"%cid)
@@ -26,6 +26,15 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU"):
   controlmc_e        = _fin.Get("Zee_ewkzll")           # defines Zmm MC of which process will be controlled by
   controlmc_w        = _fin.Get("signal_ewkwjets")
   controlmc_g        = _fin.Get("gjets_ewkgjets")
+
+  # Apply per bin corrections to Z production
+  if applyZcorrections:
+    z_corrections = [0.959838, 0.936492, 0.98899, 0.945835, 1.0628, 1.14563, 1.46808, 1.36499, 0.882986]
+
+    # Scale Z production per mjj bin
+    for idx in range(1,target.GetNbinsX()):
+      content = target.GetBinContent(idx)
+      target.SetBinContent(idx, z_corrections[idx-1] * content)
 
   # Create the transfer factors and save them (not here you can also create systematic variations of these
   # transfer factors (named with extention _sysname_Up/Down

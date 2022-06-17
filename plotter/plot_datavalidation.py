@@ -21,7 +21,7 @@ def get_ylims(region1, region2):
     if region1 is "combined" and region2 is "gjets":
         return (0,0.4)
     elif region1 is "combined" and region2 is "combinedW":
-        return (0,0.3)
+        return (0,0.2)
     elif region1 is "dielectron" and region2 is "gjets":
         return (0,0.2)
     elif region1 is "dimuon" and region2 is "gjets":
@@ -334,7 +334,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     ylims = get_ylims(region1, region2)
     h_clone.GetYaxis().SetRangeUser(*ylims)
 
-    h_clone.SetMaximum(h_clone.GetMaximum()*2)
+    # h_clone.SetMaximum(h_clone.GetMaximum()*2)
 
     h_clone.Draw("e2")
 
