@@ -39,23 +39,34 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year,convention="BU", applyZcorrectio
 
   # Create the transfer factors and save them (not here you can also create systematic variations of these
   # transfer factors (named with extention _sysname_Up/Down
-  ZmmScales = target.Clone(); ZmmScales.SetName("qcd_zmm_weights_%s"%cid)
+
+  # QCD Z(vv) / Z(mm) transfer factor
+  ZmmScales = target.Clone() 
+  ZmmScales.SetName("qcd_zmm_weights_%s"%cid)
   ZmmScales.Divide(controlmc)
   _fOut.WriteTObject(ZmmScales)  # always write out to the directory
 
-  ZeeScales = target.Clone(); ZeeScales.SetName("qcd_zee_weights_%s"%cid)
+  # QCD Z(vv) / Z(ee) transfer factor
+  ZeeScales = target.Clone() 
+  ZeeScales.SetName("qcd_zee_weights_%s"%cid)
   ZeeScales.Divide(controlmc_e)
   _fOut.WriteTObject(ZeeScales)  # always write out to the directory
 
-  WZScales = target.Clone(); WZScales.SetName("qcd_w_weights_%s"%cid)
+  # QCD Z(vv) / W(lv) transfer factor
+  WZScales = target.Clone() 
+  WZScales.SetName("qcd_w_weights_%s"%cid)
   WZScales.Divide(controlmc_w)
   _fOut.WriteTObject(WZScales)  # always write out to the directory
 
-  EQScales = target.Clone(); EQScales.SetName("ewkqcd_weights_%s"%cid)
+  # QCD Z(vv) / EWK Z(vv)
+  EQScales = target.Clone()
+  EQScales.SetName("ewkqcd_weights_%s"%cid)
   EQScales.Divide(controlmc_ewk)
   _fOut.WriteTObject(EQScales)  # always write out to the directory
 
-  PhotonScales = target.Clone(); PhotonScales.SetName("qcd_photon_weights_%s"%cid)
+  # QCD Z(vv) / Gamma+jet
+  PhotonScales = target.Clone() 
+  PhotonScales.SetName("qcd_photon_weights_%s"%cid)
   PhotonScales.Divide(controlmc_photon)
   _fOut.WriteTObject(PhotonScales) # always write out to the directory
 
@@ -74,21 +85,22 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year,convention="BU", applyZcorrectio
   # TRANSFERFACTORS are what is created above, eg WScales
 
   CRs = [
-    Channel("qcd_dimuon",_wspace,out_ws,cid+'_'+model,ZmmScales,convention=convention)
-    ,Channel("qcd_dielectron",_wspace,out_ws,cid+'_'+model,ZeeScales,convention=convention)
-    ,Channel("qcd_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention)
-    ,Channel("qcd_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention)
-    ,Channel("ewkqcd_signal",_wspace,out_ws,cid+'_'+model,EQScales,convention=convention)
+    Channel("qcd_dimuon",_wspace,out_ws,cid+'_'+model,ZmmScales,convention=convention),
+    Channel("qcd_dielectron",_wspace,out_ws,cid+'_'+model,ZeeScales,convention=convention),
+    Channel("qcd_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention),
+    Channel("qcd_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention),
+    Channel("ewkqcd_signal",_wspace,out_ws,cid+'_'+model,EQScales,convention=convention),
   ]
   CRs[2].add_nuisance('CMS_veto{YEAR}_t'.format(YEAR=year),     -0.01)
   CRs[2].add_nuisance('CMS_veto{YEAR}_m'.format(YEAR=year),     -0.015)
   CRs[2].add_nuisance('CMS_veto{YEAR}_e'.format(YEAR=year),     -0.03)
 
   # Get the JES/JER uncertainty file for transfer factors
-  # Read the split uncertainties from there
+  # Read the JES/JER uncertainties for TFs from that file
   fjes = get_jes_jer_source_file_for_tf(category='vbf')
   jet_variations = get_jes_variations(fjes, year, proc='qcd')
 
+  # Add the JES/JER variation to the relevant transfer factor
   for var in jet_variations:
     add_variation(WZScales, fjes, 'znunu_over_wlnu{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "qcd_w_weights_%s_%s_Up"%(cid, var), _fOut)
     add_variation(WZScales, fjes, 'znunu_over_wlnu{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "qcd_w_weights_%s_%s_Down"%(cid, var), _fOut)

@@ -27,11 +27,17 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag,year, convention="BU"):
   # Create the transfer factors and save them (not here you can also create systematic variations of these 
   # transfer factors (named with extention _sysname_Up/Down
   
-  WScales = targetmc.Clone(); WScales.SetName("ewk_wmn_weights_%s"%cid)
-  WScales.Divide(controlmc);  _fOut.WriteTObject(WScales)  
+  # EWK W(lv) / EWK W(munu) transfer factor
+  WScales = targetmc.Clone()
+  WScales.SetName("ewk_wmn_weights_%s"%cid)
+  WScales.Divide(controlmc)
+  _fOut.WriteTObject(WScales)  
 
-  WScales_e = targetmc.Clone(); WScales_e.SetName("ewk_wen_weights_%s"%cid)
-  WScales_e.Divide(controlmc_e);  _fOut.WriteTObject(WScales_e)  
+  # EWK W(lv) / EWK W(enu) transfer factor
+  WScales_e = targetmc.Clone()
+  WScales_e.SetName("ewk_wen_weights_%s"%cid)
+  WScales_e.Divide(controlmc_e)
+  _fOut.WriteTObject(WScales_e)  
 
 
 

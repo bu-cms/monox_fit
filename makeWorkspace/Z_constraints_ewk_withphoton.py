@@ -38,19 +38,28 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrecti
 
   # Create the transfer factors and save them (not here you can also create systematic variations of these
   # transfer factors (named with extention _sysname_Up/Down
-  ZmmScales = target.Clone(); ZmmScales.SetName("ewk_zmm_weights_%s"%cid)
+
+  # EWK Z(vv) / Z(mm)
+  ZmmScales = target.Clone() 
+  ZmmScales.SetName("ewk_zmm_weights_%s"%cid)
   ZmmScales.Divide(controlmc)
   _fOut.WriteTObject(ZmmScales)  # always write out to the directory
 
-  ZeeScales = target.Clone(); ZeeScales.SetName("ewk_zee_weights_%s"%cid)
+  # EWK Z(vv) / Z(ee)
+  ZeeScales = target.Clone() 
+  ZeeScales.SetName("ewk_zee_weights_%s"%cid)
   ZeeScales.Divide(controlmc_e)
   _fOut.WriteTObject(ZeeScales)  # always write out to the directory
 
-  WZScales = target.Clone(); WZScales.SetName("ewk_w_weights_%s"%cid)
+  # EWK Z(vv) / W(lv)
+  WZScales = target.Clone()
+  WZScales.SetName("ewk_w_weights_%s"%cid)
   WZScales.Divide(controlmc_w)
   _fOut.WriteTObject(WZScales)  # always write out to the directory
 
-  PhotonScales = target.Clone(); PhotonScales.SetName("ewk_photon_weights_%s"%cid)
+  # EWK Z(vv) / gamma+jets
+  PhotonScales = target.Clone() 
+  PhotonScales.SetName("ewk_photon_weights_%s"%cid)
   PhotonScales.Divide(controlmc_g)
   _fOut.WriteTObject(PhotonScales)
 
@@ -71,10 +80,10 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrecti
   # TRANSFERFACTORS are what is created above, eg WScales
 
   CRs = [
-  Channel("ewk_dimuon",_wspace,out_ws,cid+'_'+model,ZmmScales,convention=convention)
-  ,Channel("ewk_dielectron",_wspace,out_ws,cid+'_'+model,ZeeScales,convention=convention)
-  ,Channel("ewk_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention)
-  ,Channel("ewk_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention)
+    Channel("ewk_dimuon",_wspace,out_ws,cid+'_'+model,ZmmScales,convention=convention),
+    Channel("ewk_dielectron",_wspace,out_ws,cid+'_'+model,ZeeScales,convention=convention),
+    Channel("ewk_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention),
+    Channel("ewk_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention),
   ]
   CRs[2].add_nuisance('CMS_veto{YEAR}_t'.format(YEAR=year),     -0.01)
   CRs[2].add_nuisance('CMS_veto{YEAR}_m'.format(YEAR=year),     -0.02)
