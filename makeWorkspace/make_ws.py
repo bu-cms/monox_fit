@@ -50,7 +50,7 @@ def get_pileup_variations_for_vbf(obj, category, year):
   # Store the varied histograms in a dictionary
   varied_hists = {}
   objname = obj.GetName()
-  pu_histnames = [x.GetName() for x in f_pu.GetListOfKeys() if year in x]
+  pu_histnames = [x.GetName() for x in f_pu.GetListOfKeys() if year in x.GetName()]
 
   keynames = list(filter(lambda x: objname in x, pu_histnames))
 
@@ -63,6 +63,7 @@ def get_pileup_variations_for_vbf(obj, category, year):
     varied_name = objname + "_" + variation
     varied_obj = obj.Clone(varied_name)
     varied_obj.Multiply(f_pu.Get(keyname))
+    varied_obj.SetDirectory(0)
     
     # Save the varied histogram
     varied_hists[varied_name] = varied_obj
