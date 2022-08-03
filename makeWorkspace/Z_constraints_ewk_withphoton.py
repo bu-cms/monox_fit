@@ -85,10 +85,16 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrecti
     Channel("ewk_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention),
     Channel("ewk_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention),
   ]
-  CRs[2].add_nuisance('CMS_veto{YEAR}_t'.format(YEAR=year),     -0.01)
-  CRs[2].add_nuisance('CMS_veto{YEAR}_m'.format(YEAR=year),     -0.02)
-  CRs[2].add_nuisance('CMS_veto{YEAR}_e'.format(YEAR=year),     -0.03)
+
+  # Veto weight uncertainties on Z / W
+  CRs[2].add_nuisance('CMS_eff_tauveto_{YEAR}'.format(YEAR=year),     -0.01)
   
+  CRs[2].add_nuisance('CMS_eff_e_idiso_veto_{YEAR}'.format(YEAR=year),  -0.005)
+  CRs[2].add_nuisance('CMS_eff_e_reco_veto_{YEAR}'.format(YEAR=year),  -0.01)
+
+  CRs[2].add_nuisance('CMS_eff_m_id_veto', -0.001)
+  CRs[2].add_nuisance('CMS_eff_m_iso_veto', -0.002)
+
   # Get the JES/JER uncertainty file for transfer factors
   # Read the split uncertainties from there
   fjes = get_jes_jer_source_file_for_tf(category='vbf')
@@ -110,6 +116,29 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrecti
     add_variation(PhotonScales, fjes, 'znunu_over_gjets{YEAR}_ewk_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "ewk_photon_weights_%s_%s_Up"%(cid, var), _fOut)
     add_variation(PhotonScales, fjes, 'znunu_over_gjets{YEAR}_ewk_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "ewk_photon_weights_%s_%s_Down"%(cid, var), _fOut)
     CRs[3].add_nuisance_shape(var, _fOut)
+
+  # Prefire uncertainties
+  f_pref = r.TFile.Open("sys/vbf_prefire_uncs_TF.root")
+  variation = 'CMS_L1prefire_2017'
+
+  add_variation(WZScales, f_pref, "%sUp"%variation, "ewk_w_weights_%s_%s_Up"%(cid, variation), _fOut)
+  add_variation(WZScales, f_pref, "%sDown"%variation, "ewk_w_weights_%s_%s_Down"%(cid, variation), _fOut)
+  CRs[2].add_nuisance_shape(variation, _fOut)
+
+  add_variation(ZmmScales, f_pref, "%sUp"%variation, "ewk_zmm_weights_%s_%s_Up"%(cid, variation), _fOut)
+  add_variation(ZmmScales, f_pref, "%sDown"%variation, "ewk_zmm_weights_%s_%s_Down"%(cid, variation), _fOut)
+  CRs[0].add_nuisance_shape(variation, _fOut)
+
+  add_variation(ZeeScales, f_pref, "%sUp"%variation, "ewk_zee_weights_%s_%s_Up"%(cid, variation), _fOut)
+  add_variation(ZeeScales, f_pref, "%sDown"%variation, "ewk_zee_weights_%s_%s_Down"%(cid, variation), _fOut)
+  CRs[1].add_nuisance_shape(variation, _fOut)
+
+  add_variation(PhotonScales, f_pref, "%sUp"%variation, "ewk_photon_weights_%s_%s_Up"%(cid, variation), _fOut)
+  add_variation(PhotonScales, f_pref, "%sDown"%variation, "ewk_photon_weights_%s_%s_Down"%(cid, variation), _fOut)
+  CRs[3].add_nuisance_shape(variation, _fOut)
+
+  f_pref.Close()
+
 
   # ############################ USER DEFINED ###########################################################
   # Add systematics in the following, for normalisations use name, relative size (0.01 --> 1%)
