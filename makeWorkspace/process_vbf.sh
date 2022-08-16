@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-TAG='01Aug22_vetoWeightUncs'
+TAG='16Aug22_prefireUncFix'
 INDIR=../input/vbf/merged_2022-07-20_vbfhinv_ULv8_05Feb21_2017_NLO_VJets
 INDIR="$(readlink -e $INDIR)"
 

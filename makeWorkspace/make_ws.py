@@ -83,10 +83,9 @@ def get_prefire_variations_for_vbf(obj, category):
 
   # For every H(inv) signal we have, we'll use the shapes derived from
   # VBF H(inv) 2017 signal sample
-  regex_to_remove = 'VBF_HToInvisible_2017_'
   for keyname in keynames:
     # Name of the variation (up or down)
-    variation = re.sub(regex_to_remove, '', keyname)
+    variation = 'CMS_L1prefire_2017Up' if 'CMS_L1prefire_2017_up' in keyname else 'CMS_L1prefire_2017Down'
     varied_name = obj.GetName() + "_" + variation
     varied_obj = obj.Clone(varied_name)
     varied_obj.Multiply(f_pref.Get(keyname))
