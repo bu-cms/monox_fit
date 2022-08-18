@@ -95,6 +95,10 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrecti
   CRs[2].add_nuisance('CMS_eff_m_id_veto', -0.001)
   CRs[2].add_nuisance('CMS_eff_m_iso_veto', -0.002)
 
+  # Pileup uncertainties on ratios
+  for i in range(len(CRs)):
+    CRs[i].add_nuisance('CMS_pileup', 0.01)
+
   # Get the JES/JER uncertainty file for transfer factors
   # Read the split uncertainties from there
   fjes = get_jes_jer_source_file_for_tf(category='vbf')

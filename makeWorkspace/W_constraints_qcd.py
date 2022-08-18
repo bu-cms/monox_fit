@@ -84,6 +84,10 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag,year, convention="BU"):
   add_variation(WScales_e, f_pref, "%sDown"%variation, "qcd_wen_weights_%s_%s_Down"%(cid, variation), _fOut)
   CRs[1].add_nuisance_shape(variation,_fOut)
 
+  # Pileup uncertainties on ratios
+  for i in range(len(CRs)):
+    CRs[i].add_nuisance('CMS_pileup', 0.01)
+
   # Veto weight uncertainties
   for c in CRs:
     c.add_nuisance('CMS_eff_tauveto_{YEAR}'.format(YEAR=year),      0.01)
