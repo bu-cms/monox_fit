@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-TAG='18Aug22_pileupUncFix'
-INDIR=../input/vbf/merged_2022-07-20_vbfhinv_ULv8_05Feb21_2017_NLO_VJets
+TAG='09Jun23_removePrefFromRatio'
+INDIR=../input/vbf/merged_2021-08-18_vbfhinv_ULv8_05Feb21_NLO_VJets
 INDIR="$(readlink -e $INDIR)"
 
 OUTDIR="../vbf/$(basename $INDIR)/${TAG}/root"
@@ -25,8 +25,8 @@ echo "Commit hash: $(git rev-parse HEAD)" >> ${INFOFILE}
 echo "Branch name: $(git rev-parse --abbrev-ref HEAD)" >> ${INFOFILE}
 git diff >> ${INFOFILE}
 
-./make_ws.py ${INFILE} --out ${WSFILE} --categories vbf_2017
-./runModel.py ${WSFILE} --categories vbf_2017 --out ${OUTDIR}/combined_model_vbf.root
+./make_ws.py ${INFILE} --out ${WSFILE} --categories vbf_2017,vbf_2018
+./runModel.py ${WSFILE} --categories vbf_2017,vbf_2018 --out ${OUTDIR}/combined_model_vbf.root
 
 # Split for IC
 # ./runModel.py ${WSFILE} --categories vbf_2017 --out ${OUTDIR}/combined_model_vbf_forIC_2017.root --rename "mjj_MTR_2017"
