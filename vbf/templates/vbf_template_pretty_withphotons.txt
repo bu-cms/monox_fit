@@ -105,7 +105,6 @@ CMS_eff_e_idiso_veto_@YEAR param 0.0 1
 CMS_eff_e_reco_veto_@YEAR param 0.0 1
 CMS_eff_m_id_veto param 0.0 1
 CMS_eff_m_iso_veto param 0.0 1
-CMS_L1prefire_2017 param 0.0 1
 CMS_pileup param 0.0 1
 jer_@YEAR param 0.0 1
 jesAbsolute param 0.0 1
