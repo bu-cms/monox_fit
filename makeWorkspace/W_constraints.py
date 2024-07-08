@@ -36,7 +36,7 @@ def do_stat_unc(histogram, proc,cid, region, CR, outfile, functype="lognorm"):
     outfile.WriteTObject(up)
     outfile.WriteTObject(down)
 
-    print "Adding an error -- ", up.GetName(),err
+    print ("Adding an error -- ", up.GetName(),err)
     CR.add_nuisance_shape("{CONSTRAINT}_stat_error_{REGION}_bin{BIN}".format(**replacement),outfile, functype=functype)
 
 

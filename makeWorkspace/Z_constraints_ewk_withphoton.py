@@ -212,7 +212,6 @@ def my_function(_wspace,_fin,_fOut,nam,diag, year):
 
   #Now lets uncorrelate the bins:
   for b in range(target.GetNbinsX()):
-    #print "HELLO trying to fill up / down"
     ewk_up_w = Zvv_w.Clone(); ewk_up_w.SetName("ewk_w_weights_%s_ewk_ewk_%s_bin%d_Up"%(nam,re.sub("_201(\d)","",nam),b))
     ewk_down_w = Zvv_w.Clone(); ewk_down_w.SetName("ewk_w_weights_%s_ewk_ewk_%s_bin%d_Down"%(nam,re.sub("_201(\d)","",nam),b))
     for i in range(target.GetNbinsX()):
@@ -220,8 +219,6 @@ def my_function(_wspace,_fin,_fOut,nam,diag, year):
         ewk_up_w.SetBinContent(i+1,wratio_ewk_up.GetBinContent(i+1))
         ewk_down_w.SetBinContent(i+1,wratio_ewk_down.GetBinContent(i+1))
         break
-
-    #print "HELLO filled up / down ",ewk_up.GetBinContent(b+1), ewk_down.GetBinContent(b+1)
 
     _fOut.WriteTObject(ewk_up_w)
     _fOut.WriteTObject(ewk_down_w)
@@ -257,7 +254,6 @@ def my_function(_wspace,_fin,_fOut,nam,diag, year):
 
   #Now lets uncorrelate the bins:
   for b in range(target.GetNbinsX()):
-    #print "HELLO trying to fill up / down"
     ewk_up_g = Zvv_g.Clone(); ewk_up_g.SetName("ewk_photon_weights_%s_ewkphoton_ewk_%s_bin%d_Up"%(nam,re.sub("_201(\d)","",nam),b))
     ewk_down_g = Zvv_g.Clone(); ewk_down_g.SetName("ewk_photon_weights_%s_ewkphoton_ewk_%s_bin%d_Down"%(nam,re.sub("_201(\d)","",nam),b))
     for i in range(target.GetNbinsX()):
@@ -265,8 +261,6 @@ def my_function(_wspace,_fin,_fOut,nam,diag, year):
         ewk_up_g.SetBinContent(i+1,gratio_ewk_up.GetBinContent(i+1))
         ewk_down_g.SetBinContent(i+1,gratio_ewk_down.GetBinContent(i+1))
         break
-
-    #print "HELLO filled up / down ",ewk_up.GetBinContent(b+1), ewk_down.GetBinContent(b+1)
 
     _fOut.WriteTObject(ewk_up_g)
     _fOut.WriteTObject(ewk_down_g)

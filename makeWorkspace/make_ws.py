@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -240,7 +240,7 @@ def get_signal_theory_variations(obj, category):
 
       varname = '{CHANNEL}_{PROCESS_FOR_UNC}_{UNCTYPE}{DIRECTION}'.format(**filler)
       variation = f.Get(varname)
-      print varname, variation
+      print (varname, variation)
 
       varied_obj = obj.Clone(name)
       varied_obj.Multiply(variation)
@@ -435,7 +435,7 @@ def create_workspace(fin, fout, category, args):
   # Helper function
   def write_obj(obj, name):
     '''Converts histogram to RooDataHist and writes to workspace + ROOT file'''
-    print "Creating Data Hist for ", name
+    print ("Creating Data Hist for ", name)
     dhist = ROOT.RooDataHist(
                           name,
                           "DataSet - %s, %s"%(category,name),

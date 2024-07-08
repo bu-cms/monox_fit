@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# from counting_experiment import SafeWorkspaceImporter
+#!/usr/bin/env python3
 from convert import *
 import argparse
 import os
@@ -62,8 +61,7 @@ def main():
     _f      = r.TFile.Open(args.file)
     out_ws  = r.RooWorkspace("combinedws")
 
-    #out_ws._import = getattr(out_ws,"import")
-    out_ws._import = SafeWorkspaceImporter(out_ws)
+    out_ws._safe_import = SafeWorkspaceImporter(out_ws)
 
     sampleType  = r.RooCategory("bin_number","Bin Number");
     obs         = r.RooRealVar("observed","Observed Events bin",1)
@@ -93,7 +91,7 @@ def main():
                 cmb_categories.append(x.cmodel(cn,crn,_f,_fDir,out_ws,diag_combined, year))
 
     for cid,cn in enumerate(cmb_categories):
-        print "Run Model: cid, cn", cid,cn
+        print ("Run Model: cid, cn", cid,cn)
         cn.init_channels()
         channels = cn.ret_channels()
 
@@ -103,7 +101,7 @@ def main():
     convertToCombineWorkspace(out_ws,_f,args.categories,cmb_categories,controlregions_def, args.rename)
     _fOut.WriteTObject(out_ws)
 
-    print "Produced constraints model in --> ", _fOut.GetName()
+    print ("Produced constraints model in --> ", _fOut.GetName())
 
 if __name__ == "__main__":
     main()

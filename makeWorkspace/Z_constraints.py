@@ -345,8 +345,8 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year):
   fjes = get_jes_jer_source_file_for_tf(category='monojet')
   jet_variations = get_jes_variations(fjes, year)
 
-  print "VARIATIONS"
-  print jet_variations
+  print ("VARIATIONS")
+  print (jet_variations)
   for var in jet_variations:
     add_variation(WZScales, fjes, 'znunu_over_wlnu{YEAR}_qcd_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "w_weights_%s_%s_Up"%(cid, var), _fOut)
     add_variation(WZScales, fjes, 'znunu_over_wlnu{YEAR}_qcd_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "w_weights_%s_%s_Down"%(cid, var), _fOut)
