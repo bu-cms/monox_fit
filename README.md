@@ -1,5 +1,6 @@
 # monox_fit
 
+These instructions are for Legacy Run2 fit code, and should be used with the tagged version legacy_run2
 
 ## Setup combine
 
