@@ -4,7 +4,7 @@
 
 import ROOT as r
 import re
-from general import get_nuisance_name
+from utils.general import get_nuisance_name
 
 def get_jes_variations(fjes, year, proc='qcd'):
     '''Given the JES file, get the list of JES variations.'''

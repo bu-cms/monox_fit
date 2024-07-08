@@ -28,9 +28,9 @@ def convertToCombineWorkspace(wsin_combine, f_simple_hists, categories, cmb_cate
         nbins = samplehist.GetNbinsX()
         varname = samplehist.GetXaxis().GetTitle()
 
-        print wlocal, varname
+        print (wlocal, varname)
         varl = wlocal.var(varname)
-        print "VAR NAME", varl.GetName(), renameVariable
+        print ("VAR NAME", varl.GetName(), renameVariable)
 
         if renameVariable != "":
             varl.SetName(renameVariable)
@@ -44,7 +44,7 @@ def convertToCombineWorkspace(wsin_combine, f_simple_hists, categories, cmb_cate
         keys_local = fdir.GetListOfKeys()
         for key in keys_local:
             obj = key.ReadObj()
-            print obj.GetName(), obj.GetTitle(), type(obj)
+            print (obj.GetName(), obj.GetTitle(), type(obj))
             if not type(obj) in [ROOT.TH1D,ROOT.TH1F]:
                 continue
             title = obj.GetTitle()
@@ -53,7 +53,7 @@ def convertToCombineWorkspace(wsin_combine, f_simple_hists, categories, cmb_cate
             if not obj.Integral() > 0:
                 # otherwise Combine will complain!
                 obj.SetBinContent(1, 0.0001)
-            print "Creating Data Hist for ", name
+            print ("Creating Data Hist for ", name)
             dhist = ROOT.RooDataHist(
                 cat+"_"+name, "DataSet - %s, %s" % (cat, name), ROOT.RooArgList(varl), obj)
             # dhist.Print("v")
@@ -69,32 +69,26 @@ def convertToCombineWorkspace(wsin_combine, f_simple_hists, categories, cmb_cate
                 len(x.convertHistograms)
                 for obj in x.convertHistograms:
                     name = obj.GetName()
-                    print "Creating Data Hist for ", name
+                    print ("Creating Data Hist for ", name)
                     dhist = ROOT.RooDataHist(
                         cat+"_"+name, "DataSet - %s, %s" % (cat, name), ROOT.RooArgList(varl), obj)
                     # dhist.Print("v")
                     wsin_combine._import(dhist)
             except:
-                print "No explicit additional convertHistograms defined"
+                print ("No explicit additional convertHistograms defined")
 
             expectations = ROOT.RooArgList()
-            for b in range(nbins+1):
-                #print "model_mu_cat_%d_bin_%d"%(10*crd+icat,b), wsin_combine.var( "model_mu_cat_%d_bin_%d"%(10*crd+icat,b))
-                expectations.add(wsin_combine.var(naming_convention(
-                    b, cat+'_'+x.model, "IC" if "MTR" in renameVariable else "BU")))
-
-                #print "DAVID", b, expectations.Print("V"),wsin_combine.var("model_mu_cat_%s_bin_%d"%(cat+'_'+x.model,b)).getVal()
+            for b in range(nbins):
+                expectations.add(wsin_combine.var("model_mu_cat_%s_bin_%d" % (cat+'_'+x.model, b)))#naming_convention(b, cat+'_'+x.model, "IC" if "MTR" in renameVariable else "BU")))
             if not ('wjet' in x.model):
-                phist = ROOT.RooParametricHist("%s_signal_%s_model" % (
-                    cat, x.model), "Model Shape for %s in Category %s" % (x.model, cat), varl, expectations, samplehist)
-                phist_norm = ROOT.RooAddition("%s_norm" % phist.GetName(
-                ), "Total number of expected events in %s" % phist.GetName(), expectations)
+                phist = ROOT.RooParametricHist("%s_signal_%s_model" % (cat, x.model), "Model Shape for %s in Category %s" % (x.model, cat), varl, expectations, samplehist)
+                phist_norm = ROOT.RooAddition("%s_norm" % phist.GetName(), "Total number of expected events in %s" % phist.GetName(), expectations)
                 wsin_combine._import(phist)
                 wsin_combine._import(phist_norm)
 
             # now loop through the "control regions" for this guy
             for cid, cn in enumerate(cmb_categories):
-                print "CHECK", cn.catid, cn.cname
+                print ("CHECK", cn.catid, cn.cname)
                 if cn.catid != cat+'_'+x.model:
                     continue
                 if cn.cname != crn:
@@ -110,9 +104,9 @@ def convertToCombineWorkspace(wsin_combine, f_simple_hists, categories, cmb_cate
                             cr_expectations.add(wsin_combine.function(
                                 "pmu_cat_%s_ch_%s_bin_%d" % (cat+'_'+x.model, cr.chid, b)))
 
-                    print "%s_%s_%s_model" % (cat, cr.crname, x.model)
+                    print ("%s_%s_%s_model" % (cat, cr.crname, x.model))
                     cr_expectations.Print()
-                    print "Look here", samplehist.GetNbinsX(), cr_expectations.getSize()
+                    print ("Look here", samplehist.GetNbinsX(), cr_expectations.getSize())
                     p_phist = ROOT.RooParametricHist("%s_%s_%s_model" % (
                         cat, cr.crname, x.model), "Expected Shape for %s in control region in Category %s" % (cr.crname, cat), varl, cr_expectations, samplehist)
                     p_phist_norm = ROOT.RooAddition("%s_norm" % p_phist.GetName(
@@ -128,5 +122,5 @@ def convertToCombineWorkspace(wsin_combine, f_simple_hists, categories, cmb_cate
             continue
         if par.getAttribute("BACKGROUND_NUISANCE"):
             continue  # these aren't in fact used for combine
-        print par.GetName(), "param", par.getVal(), "1"
+        print (par.GetName(), "param", par.getVal(), "1")
     #print "Done -- Combine Ready Workspace inside ",fout.GetName()

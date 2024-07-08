@@ -30,7 +30,6 @@ def getNormalizedHist(hist):
         thret.GetYaxis().SetTitle("Events/GeV")
     return thret
 
-
 class Bin:
     def __init__(self, category, catid, chid, id, var, datasetname, wspace, wspace_out, xmin, xmax, convention):
         self.category = category
@@ -47,7 +46,7 @@ class Bin:
             self.binid = "cat_%s_ch_%s_bin%d" % (catid, chid, id+1)
 
         self.wspace_out = wspace_out
-        self.wspace_out._import = SafeWorkspaceImporter(self.wspace_out)
+        self.wspace_out._safe_import = SafeWorkspaceImporter(self.wspace_out)
 
         self.set_wspace(wspace)
 
@@ -95,18 +94,18 @@ class Bin:
         nuisances = self.cr.ret_bkg_nuisances()
         if len(nuisances) > 0:
             prod = 0
-            print "Is this really true? How many nuisance:", len(nuisances)
+            print ("Is this really true? How many nuisance:", len(nuisances))
 
             if len(nuisances) > 1:
                 nuis_args = r.RooArgList()
                 for nuis in nuisances:
-                    print "Adding Background Nuisance ", nuis
+                    print ("Adding Background Nuisance ", nuis)
                     # Nuisance*Scale is the model
                     #form_args = r.RooArgList(self.wspace_out.var("nuis_%s"%nuis),self.wspace_out.function("sys_function_%s_%s"%(nuis,self.binid)))
-                    print "Trying to continue", self.wspace_out.function(
-                        "sys_function_%s_%s" % (nuis, self.binid)).GetName()
-                    print "Does it have an attribute:", self.wspace_out.function(
-                        "sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp")
+                    print ("Trying to continue", self.wspace_out.function(
+                        "sys_function_%s_%s" % (nuis, self.binid)).GetName())
+                    print ("Does it have an attribute:", self.wspace_out.function(
+                        "sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp"))
                     if (self.wspace_out.function("sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp")):
                         continue
                     form_args = r.RooArgList(self.wspace_out.function(
@@ -120,7 +119,7 @@ class Bin:
                 prod = r.RooProduct("prod_background_%s" %
                                     self.binid, "Nuisance Modifier", nuis_args)
             else:
-                print "Adding Background Nuisance ", nuisances[0]
+                print ("Adding Background Nuisance ", nuisances[0])
                 # if (self.wspace_out.function.getAttribute("temp")):
                 ##  prod = r.RooFormulaVar("prod_background_%s"%self.binid,"Delta Change in Background from %s"%nuisances[0],"1",r.RooArgList())
                 # else:
@@ -140,8 +139,8 @@ class Bin:
 
     def set_initY(self, mcdataset):
 
-        print "INIT Y: ", "%s>=%g && %s<%g" % (self.var.GetName(), self.xmin, self.var.GetName(
-        ), self.xmax), self.rngename, self.wspace, self.wspace.data(mcdataset), mcdataset
+        print ("INIT Y: ", "%s>=%g && %s<%g" % (self.var.GetName(), self.xmin, self.var.GetName(
+        ), self.xmax), self.rngename, self.wspace, self.wspace.data(mcdataset), mcdataset)
         self.initY = self.wspace.data(mcdataset).sumEntries("%s>=%g && %s<%g" % (
             self.var.GetName(), self.xmin, self.var.GetName(), self.xmax), self.rngename)
 
@@ -162,8 +161,8 @@ class Bin:
 
     def set_wspace(self, w):
         self.wspace = w
-        # self.wspace._import = getattr(self.wspace,"import") # workaround: import is a python keyword
-        self.wspace._import = SafeWorkspaceImporter(self.wspace)
+        #self.wspace._import = getattr(self.wspace,"import") # workaround: import is a python keyword
+        self.wspace._safe_import = SafeWorkspaceImporter(self.wspace)
 
     def set_sfactor(self, val):
         #print "Scale Factor for " ,self.binid,val
@@ -179,7 +178,7 @@ class Bin:
                 self.sfactor, r.RooFit.RecycleConflictNodes())
 
     def setup_expect_var(self, functionalForm=""):
-        print functionalForm
+        print (functionalForm)
         if not len(functionalForm):
             if not self.wspace_out.var(naming_convention(self.id, self.catid, self.convention)):
                 self.model_mu = r.RooRealVar(
@@ -194,7 +193,7 @@ class Bin:
                 self.model_mu = self.wspace_out.var(
                     naming_convention(self.id, self.catid, self.convention))
         else:
-            print "Setting up dependence!!"
+            print ("Setting up dependence!!")
             if self.convention == "BU":
                 DEPENDANT = "%s_bin_%d" % (functionalForm, self.id)
             else:
@@ -216,7 +215,7 @@ class Bin:
                     if (self.wspace_out.function("sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp")):
                         continue
 
-                    print "Adding Nuisance ", nuis
+                    print ("Adding Nuisance ", nuis)
                     # Nuisance*Scale is the model
                     #form_args = r.RooArgList(self.wspace_out.var("nuis_%s"%nuis),self.wspace_out.function("sys_function_%s_%s"%(nuis,self.binid)))
                     form_args = r.RooArgList(self.wspace_out.function(
@@ -231,7 +230,7 @@ class Bin:
                 prod = r.RooProduct("prod_%s" % self.binid,
                                     "Nuisance Modifier", nuis_args)
             else:
-                print "Adding Nuisance ", nuisances[0]
+                print ("Adding Nuisance ", nuisances[0])
                 prod = r.RooFormulaVar("prod_%s" % self.binid, "Delta Change from %s" % nuisances[0], "1+@0", r.RooArgList(
                     self.wspace_out.function("sys_function_%s_%s" % (nuisances[0], self.binid))))
             arglist.add(prod)
@@ -313,11 +312,11 @@ class Bin:
         return self.wspace_out.var(self.model_mu.GetName()).getVal()
 
     def Print(self):
-        print "Channel/Bin -> ", self.chid, self.binid, ", Var -> ", self.var.GetName(
-        ), ", Range -> ", self.xmin, self.xmax, "MODEL MU (prefit/current state)= ", self.initY, "/", self.ret_model()
-        print " .... observed = ", self.o, ", expected = ", self.wspace_out.function(self.mu.GetName()).getVal(
-        ), " (of which %f is background)" % self.ret_background(), ", scale factor = ", self.wspace_out.function(self.sfactor.GetName()).getVal()
-        print ", Pre-corrections (nuisance at 0) expected (-bkg) ", self.initE_precorr
+        print ("Channel/Bin -> ", self.chid, self.binid, ", Var -> ", self.var.GetName(
+        ), ", Range -> ", self.xmin, self.xmax, "MODEL MU (prefit/current state)= ", self.initY, "/", self.ret_model())
+        print (" .... observed = ", self.o, ", expected = ", self.wspace_out.function(self.mu.GetName()).getVal(
+        ), " (of which %f is background)" % self.ret_background(), ", scale factor = ", self.wspace_out.function(self.sfactor.GetName()).getVal())
+        print (", Pre-corrections (nuisance at 0) expected (-bkg) ", self.initE_precorr)
 
 
 class Channel:
@@ -329,7 +328,8 @@ class Channel:
         self.chname = "ControlRegion_%s" % self.chid
         self.backgroundname = ""
         self.wspace_out = wspace_out
-        self.wspace_out._import = SafeWorkspaceImporter(self.wspace_out)
+        self.wspace_out._safe_import = SafeWorkspaceImporter(self.wspace_out)
+        #self.wspace_out = getattr(self.wspace_out, "import")
         self.set_wspace(wspace)
         self.nuisances = []
         self.bkg_nuisances = []
@@ -345,13 +345,13 @@ class Channel:
         sys.exit("Nothing Will Happen with add_systematic, use add_nuisance")
         sfup = self.scalefactors.GetName()+"_%s_" % sys+"Up"
         sfdn = self.scalefactors.GetName()+"_%s_" % sys+"Down"
-        print "Looking for systematic shapes ... %s, %s" % (sfup, sfdn)
+        print ("Looking for systematic shapes ... %s, %s" % (sfup, sfdn))
         try:
-            print file.Get(sfup).GetName()
-            print file.Get(sfdn).GetName()
+            print (file.Get(sfup).GetName())
+            print (file.Get(sfdn).GetName())
         except AttributeError:
-            print "Missing one of ", sfup, sfdn, " in ", file.GetName()
-            print "Following is in directory "
+            print ("Missing one of ", sfup, sfdn, " in ", file.GetName())
+            print ("Following is in directory ")
             file.Print()
             sys.exit()
         self.systematics[sys] = [file.Get(sfup), file.Get(sfdn)]
@@ -420,14 +420,14 @@ class Channel:
 
         sfup = self.scalefactors.GetName()+"_%s_" % name+"Up"
         sfdn = self.scalefactors.GetName()+"_%s_" % name+"Down"
-        print "Looking for systematic shapes ... %s,%s" % (sfup, sfdn)
+        print ("Looking for systematic shapes ... %s,%s" % (sfup, sfdn))
         sysup, sysdn = file.Get(sfup), file.Get(sfdn)
         try:
             sysup.GetName()
             sysdn.GetName()
         except ReferenceError:
-            print "Missing one of ", sfup, sfdn, " in ", file.GetName()
-            print "Following is in directory "
+            print ("Missing one of ", sfup, sfdn, " in ", file.GetName())
+            print ("Following is in directory ")
             file.ls()
             sys.exit()
         # Now we loop through each bin and construct a polynomial function per bin
@@ -496,15 +496,15 @@ class Channel:
                 self.wspace_out.var("nuis_IN_%s" % name).setVal(vv)
                 self.wspace_out.var("%s" % name).setVal(vv)
             else:
-                print "DIRECTIVE %s IN SYSTEMATIC %s, NOT UNDERSTOOD!" % (
-                    setv, name)
+                print ("DIRECTIVE %s IN SYSTEMATIC %s, NOT UNDERSTOOD!" % (
+                    setv, name))
                 sys.exit()
         self.nuisances.append(name)
 
     def set_wspace(self, w):
         self.wspace = w
-        self.wspace._import = SafeWorkspaceImporter(self.wspace)
-        # self.wspace._import = getattr(self.wspace,"import") # workaround: import is a python keyword
+        self.wspace._safe_import = SafeWorkspaceImporter(self.wspace)
+        #self.wspace._import = getattr(self.wspace,"import") # workaround: import is a python keyword
 
     def ret_bkg_nuisances(self):
         return self.bkg_nuisances
@@ -567,8 +567,8 @@ class Category:
         self._wspace = _wspace
         self._wspace_out = _wspace_out
 
-        self._wspace_out._import = SafeWorkspaceImporter(self._wspace_out)
-        self._wspace._import = SafeWorkspaceImporter(self._wspace)
+        self._wspace_out._safe_import = SafeWorkspaceImporter(self._wspace_out)
+        self._wspace._safe_import = SafeWorkspaceImporter(self._wspace)
 
         #self.diag = diag
         self.additional_vars = {}
@@ -871,7 +871,7 @@ class Category:
             #print max_local, maxdiff, syst.GetName()
             if max_local > maxdiff:
                 maxdiff = max_local
-        print "MaxDiff = ", maxdiff
+        print ("MaxDiff = ", maxdiff)
         maxdiff -= 1
         canvr.cd()
         dHist = r.TH1F(
@@ -1166,7 +1166,7 @@ class Category:
         #  self._fout.WriteTObject(self.canvases[canv])
         # finally THE model
         self._fout.WriteTObject(self.model_hist)
-        print "Saving hitograms"
+        print ("Saving hitograms")
         for hist in self.histograms:
-            print "Saving - ", hist.GetName()
+            print ("Saving - ", hist.GetName())
             self._fout.WriteTObject(hist)

@@ -27,7 +27,7 @@ fout = r.TFile(x.out_file_name,'RECREATE')
 # Loop and build components for categories
 for cat_id,cat in enumerate(x.categories):
   fin  = r.TFile.Open(cat['in_file_name'])
-  print "file",cat['in_file_name']
+  print ("file",cat['in_file_name'])
   fout.cd(); fdir = fout.mkdir("category_%s"%cat['name'])
 
   mb = r.ModelBuilder(cat_id,cat['name'])
@@ -63,7 +63,7 @@ for cat_id,cat in enumerate(x.categories):
         mb.addSample(sample,entry[0],entry[1],1,1,0)  # name, region, process, is_mc, is_signal
         #mb.addSample(sample,entry[0],entry[1],1,1,1)  # name, region, process, is_mc, is_signal
       #mb.addSample(sample,entry[0],entry[1],entry[2],entry[3])  # name, region, process, is_mc, is_signal
-      except : print " No Tree %s found, skipping "%sample
+      except : print (" No Tree %s found, skipping "%sample)
 
   mb.save()
   # Add any 'cutstring' for future reference
@@ -75,5 +75,5 @@ for cat_id,cat in enumerate(x.categories):
 #config.ReadFile("configs/%s.py"%(args[0]))
 #fout.cd(); config.Write()
 
-print "done!, Model saved in -> ", fout.GetName()
+print ("done!, Model saved in -> ", fout.GetName())
 fout.Close("R")
