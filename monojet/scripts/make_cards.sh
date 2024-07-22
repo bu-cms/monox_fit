@@ -6,7 +6,7 @@ ulimit -s unlimited
 
 mkdir -p cards
 # Fill templates
-for YEAR in 2017 2018; do
+for YEAR in 2017; do
     CARD=cards/card_monojet_${YEAR}.txt
     cp ../../templates/monojet_template.txt ${CARD}
     sed -i "s|@YEAR|${YEAR}|g" ${CARD}

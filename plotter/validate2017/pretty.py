@@ -61,11 +61,11 @@ def plot_cms(preliminary,lumi, c):
     latex2.SetTextSize(0.6*c.GetTopMargin())
     latex2.SetTextFont(42)
     latex2.SetTextAlign(31)
-    latex2.DrawLatex(0.9, 0.95,str(lumi) +" fb^{-1} (13 TeV)")
+    latex2.DrawLatex(0.9, 0.95,str(lumi) +" fb^{-1} (13.6 TeV)")
 
     #latex2.SetTextSize(0.035)
     #latex2.SetTextAlign(31) # align right
-    #latex2.DrawLatex(0.87, 0.95, str(lumi) +" fb^{-1} (13 TeV, 2016)");
+    #latex2.DrawLatex(0.87, 0.95, str(lumi) +" fb^{-1} (13.6 TeV, 2016)");
 
     latex3 = TLatex()
     latex3.SetNDC()

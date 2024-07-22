@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import ROOT as r
 import os
 import math
@@ -10,7 +10,7 @@ def get_nbins(canvas):
     nbins = 0
     for item in canvas.GetListOfPrimitives():
         try:
-            print item
+            print (item)
             nbins = item.GetNbinsX()
         except:
             continue

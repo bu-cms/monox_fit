@@ -316,7 +316,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
                     for direction in 'up','down':
                         # Uncertainties are stored in histogram form
                         hname = "uncertainty_ratio_z_{PROC}_mjj_unc_{UNC}_{DIR}_{YEAR}".format(PROC=proc, UNC=uncert, DIR=direction, YEAR=year)
-                        print hname
+                        print (hname)
                         hist_unc = uncFile.Get(hname)
 
                         # Find the right bin to read uncertainty from
@@ -403,7 +403,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
     latex2.SetTextSize(0.6*c.GetTopMargin())
     latex2.SetTextFont(42)
     latex2.SetTextAlign(31) # align right
-    latex2.DrawLatex(0.94, 0.95,"{LUMI:.1f} fb^{{-1}} (13 TeV)".format(LUMI=lumi))
+    latex2.DrawLatex(0.94, 0.95,"{LUMI:.1f} fb^{{-1}} (13.6 TeV)".format(LUMI=lumi))
     latex2.SetTextSize(0.6*c.GetTopMargin())
     latex2.SetTextFont(62)
     latex2.SetTextAlign(11) # align right
@@ -451,7 +451,7 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
 
     ratiosys = dummy2.Clone("ratiosys")
     for hbin in range(0,ratiosys.GetNbinsX()+1):
-        print "RATIOSYS", ratiosys.GetBinError(hbin+1), h_clone.GetBinError(hbin+1), h_data_1.GetBinError(hbin+1)
+        print ("RATIOSYS", ratiosys.GetBinError(hbin+1), h_clone.GetBinError(hbin+1), h_data_1.GetBinError(hbin+1))
         ratiosys.SetBinContent(hbin+1,1.0)
         if h_clone.GetBinContent(hbin+1)>0:
             ratiosys.SetBinError(hbin+1,h_clone.GetBinError(hbin+1)/h_clone.GetBinContent(hbin+1))

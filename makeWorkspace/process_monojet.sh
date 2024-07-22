@@ -28,9 +28,9 @@ git diff >> ${INFOFILE}
 
 ./make_ws.py ${INFILE} \
              --out ${WSFILE} \
-             --categories monojet_2017,monojet_2018
+             --categories monojet_2017
 
-./runModel.py ${WSFILE} --categories monojet_2017,monojet_2018 \
+./runModel.py ${WSFILE} --categories monojet_2017 \
                         --out ${OUTDIR}/combined_model_monojet.root
 
 cp sys/monojet_qcd_ws.root ${OUTDIR}

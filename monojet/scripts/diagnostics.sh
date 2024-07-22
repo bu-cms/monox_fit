@@ -6,7 +6,7 @@ pushd diagnostics
 ulimit -s unlimited
 
 # Individual years
-for YEAR in 2017 2018 combined; do
+for YEAR in 2017; do
     combine -M FitDiagnostics \
             --saveShapes \
             --saveWithUncertainties \
@@ -16,7 +16,7 @@ for YEAR in 2017 2018 combined; do
             ../cards/card_monojet_${YEAR}.root \
             --cminDefaultMinimizerStrategy 0 \
             | tee diag_${YEAR}.log &&
-    python ${CMSSW_BASE}/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py \
+    python3 ${CMSSW_BASE}/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py \
            fitDiagnostics_monojet_${YEAR}.root \
            -g diffnuisances_monojet_${YEAR}.root \
            --skipFitS &
@@ -29,7 +29,7 @@ for YEAR in 2017 2018 combined; do
             ../cards/card_monojet_${YEAR}.root \
             --cminDefaultMinimizerStrategy 0 \
             | tee diag_unblind_${YEAR}.log &&
-    python ${CMSSW_BASE}/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py \
+    python3 ${CMSSW_BASE}/src/HiggsAnalysis/CombinedLimit/test/diffNuisances.py \
            fitDiagnostics_monojet_unblind_${YEAR}.root \
            -g diffnuisances_monojet_unblind_${YEAR}.root \
            --skipFitS &
