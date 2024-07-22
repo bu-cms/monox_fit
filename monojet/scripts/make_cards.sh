@@ -49,7 +49,7 @@ for YEAR in 2017 2018; do
     rm tmp_histdump
 
     text2workspace.py ${CARD} --channel-masks
-    python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/systematicsAnalyzer.py --all -f html ${CARD} > cards/systematics_${YEAR}.html
+    python3 $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/systematicsAnalyzer.py --all -f html ${CARD} > cards/systematics_${YEAR}.html
 done
 
 
