@@ -424,7 +424,7 @@ def create_workspace(fin, fout, category, args):
   f_jes = get_jes_file(category)
 
   wsin_combine = ROOT.RooWorkspace("wspace_"+category,"wspace_"+category)
-  wsin_combine._import = SafeWorkspaceImporter(wsin_combine)
+  wsin_combine._safe_import = SafeWorkspaceImporter(wsin_combine)
 
   if args.standalone:
     variable_name = ("mjj_{0}" if ("vbf" in category) else "met_{0}").format(category)
