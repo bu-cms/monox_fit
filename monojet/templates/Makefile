@@ -33,4 +33,4 @@ printlimits:
 	cat $(TOPDIR)/scripts/limits.sh
 
 plots:
-	python $(TOPDIR)/scripts/make_plots.py
+	python3 $(TOPDIR)/scripts/make_plots.py
