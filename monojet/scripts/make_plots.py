@@ -16,15 +16,16 @@ procs = ['zmm','zee','w_weights','photon','wen','wmn']
 ### Years fit separately
 for year in [2017]:
     ws_file = "root/ws_monojet.root".format(year=year)
-    for tag in ["","_unblind"]:
+    #for tag in ["","_unblind"]:
+    for tag in [""]:
         fitdiag_file = 'diagnostics/fitDiagnostics_monojet{tag}_{year}.root'.format(year=year,tag=tag)
         diffnuis_file = 'diagnostics/diffnuisances_monojet{tag}_{year}.root'.format(year=year,tag=tag)
         category='monojet_{year}'.format(year=year)
         outdir = './plots/{year}{tag}/'.format(year=year,tag=tag)
         for region in regions:
             plotPreFitPostFit(region,     category,ws_file, fitdiag_file, outdir, lumi[year], year)
-        # for proc in procs:
-        #     plot_ratio(proc, category, 'root/combined_model_monojet.root'.format(year=year), outdir, lumi[year],year)
+        for proc in procs:
+             plot_ratio(proc, category, 'root/combined_model_monojet.root'.format(year=year), outdir, lumi[year],year)
 
         # Flavor integrated
         dataValidation("combined",  "gjets",    category, ws_file, fitdiag_file, outdir,lumi[year],year)
@@ -43,7 +44,8 @@ for year in [2017]:
 
 
 ### Years fit together
-for tag in ["","_unblind"]:
+#for tag in ["","_unblind"]:
+for tag in [""]:
     outdir="plots/combined{tag}".format(tag=tag)
     diffnuis_file = 'diagnostics/diffnuisances_monojet{tag}_combined.root'.format(tag=tag)
     plot_nuis(diffnuis_file, outdir)
