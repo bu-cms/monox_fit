@@ -27,11 +27,17 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag,year, convention="BU"):
   # Create the transfer factors and save them (not here you can also create systematic variations of these 
   # transfer factors (named with extention _sysname_Up/Down
   
-  WScales = targetmc.Clone(); WScales.SetName("ewk_wmn_weights_%s"%cid)
-  WScales.Divide(controlmc);  _fOut.WriteTObject(WScales)  
+  # EWK W(lv) / EWK W(munu) transfer factor
+  WScales = targetmc.Clone()
+  WScales.SetName("ewk_wmn_weights_%s"%cid)
+  WScales.Divide(controlmc)
+  _fOut.WriteTObject(WScales)  
 
-  WScales_e = targetmc.Clone(); WScales_e.SetName("ewk_wen_weights_%s"%cid)
-  WScales_e.Divide(controlmc_e);  _fOut.WriteTObject(WScales_e)  
+  # EWK W(lv) / EWK W(enu) transfer factor
+  WScales_e = targetmc.Clone()
+  WScales_e.SetName("ewk_wen_weights_%s"%cid)
+  WScales_e.Divide(controlmc_e)
+  _fOut.WriteTObject(WScales_e)  
 
 
 
@@ -66,11 +72,15 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag,year, convention="BU"):
     add_variation(WScales_e, fjes, 'wlnu_over_wenu{YEAR}_ewk_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "ewk_wen_weights_%s_%s_Down"%(cid, var), _fOut)
     CRs[1].add_nuisance_shape(var,_fOut)
 
+  # Veto weight uncertainties
   for c in CRs:
-    c.add_nuisance('CMS_veto{YEAR}_t'.format(YEAR=year),     0.01)
-    c.add_nuisance('CMS_veto{YEAR}_m'.format(YEAR=year),     0.02)
-    c.add_nuisance('CMS_veto{YEAR}_e'.format(YEAR=year),     0.03)
+    c.add_nuisance('CMS_eff_tauveto_{YEAR}'.format(YEAR=year),     0.01)
 
+    c.add_nuisance('CMS_eff_e_idiso_veto_{YEAR}'.format(YEAR=year),  0.005)
+    c.add_nuisance('CMS_eff_e_reco_veto_{YEAR}'.format(YEAR=year),  0.01)
+
+    c.add_nuisance('CMS_eff_m_id_veto', 0.001)
+    c.add_nuisance('CMS_eff_m_iso_veto', 0.002)
 
   # ############################ USER DEFINED ###########################################################
   # Add systematics in the following, for normalisations use name, relative size (0.01 --> 1%)

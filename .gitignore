@@ -3,3 +3,6 @@
 *.d
 *.*~
 .vscode/
+vbf/merged*/
+nohup.out
+*.log

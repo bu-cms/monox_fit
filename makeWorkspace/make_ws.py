@@ -11,6 +11,11 @@ from HiggsAnalysis.CombinedLimit.ModelTools import *
 from utils.general import extract_year, extract_channel, is_MC_bkg
 
 ROOT.gSystem.Load("libHiggsAnalysisCombinedLimit")
+
+# Silent mode for ROOFit
+ROOT.RooMsgService.instance().setStreamStatus(1,False)
+ROOT.RooMsgService.instance().setSilentMode(True)
+
 pjoin = os.path.join
 
 def cli_args():
@@ -35,14 +40,76 @@ def cli_args():
 
     return args
 
+def get_pileup_variations_for_vbf(obj, category, year):
+  """
+  PU shape uncertainties per process for VBF H(inv) analysis.
+  """
+  # ROOT file having the PU shape uncertainties
+  f_pu = ROOT.TFile('./sys/vbf_pileup_uncs.root')
+
+  # Store the varied histograms in a dictionary
+  varied_hists = {}
+  objname = obj.GetName()
+  pu_histnames = [x.GetName() for x in f_pu.GetListOfKeys() if year in x.GetName()]
+
+  keynames = list(filter(lambda x: objname in x, pu_histnames))
+
+  if len(keynames) == 0:
+    return {} 
+
+  for keyname in keynames:
+    # Proper uncertainty name for the combine framework
+    variation = 'CMS_pileupUp' if 'pileup_up' in keyname else 'CMS_pileupDown'
+    varied_name = objname + "_" + variation
+    varied_obj = obj.Clone(varied_name)
+    varied_obj.Multiply(f_pu.Get(keyname))
+    varied_obj.SetDirectory(0)
+    
+    # Save the varied histogram
+    varied_hists[varied_name] = varied_obj
+
+  f_pu.Close()
+
+  return varied_hists
+
+def get_prefire_variations_for_vbf(obj, category):
+  """
+  Prefire shape uncertainties for VBF H(inv) analysis.
+  Only relevant for 2017 data, uses the uncertainties computed from VBF H(inv) shape.
+  """
+  f_pref = ROOT.TFile('./sys/vbf_prefire_uncs.root')
+  varied_hists = {}
+  keynames = [x.GetName() for x in f_pref.GetListOfKeys()]
+
+  # For every H(inv) signal we have, we'll use the shapes derived from
+  # VBF H(inv) 2017 signal sample
+  for keyname in keynames:
+    # Name of the variation (up or down)
+    variation = 'CMS_L1prefire_2017Up' if 'CMS_L1prefire_2017_up' in keyname else 'CMS_L1prefire_2017Down'
+    varied_name = obj.GetName() + "_" + variation
+    varied_obj = obj.Clone(varied_name)
+    varied_obj.Multiply(f_pref.Get(keyname))
+    varied_obj.SetDirectory(0)
+    
+    # Save the varied histogram in a dictionary
+    varied_hists[varied_name] = varied_obj
+  
+  if f_pref:
+    f_pref.Close()
+
+  return varied_hists
+
 def get_jes_file(category):
-  '''Get the relevant JES source file for the given category.'''
+  """
+  Get the relevant JES source file for the given category.
+  """
+  
   # By default: Get the uncertainties with smearing for VBF, the opposite for monojet
   jer_suffix = 'jer_smeared' if 'vbf' in category else 'not_jer_smeared'
-  # JES shape files for each category
+  # JES shape uncertainty files for each category
   f_jes_dict = {
     '(monoj|monov).*': ROOT.TFile("sys/monoj_monov_shape_jes_uncs_smooth_{}.root".format(jer_suffix) ),
-    'vbf.*': ROOT.TFile("sys/vbf_shape_jes_uncs_smooth_{}.root".format(jer_suffix) )
+    'vbf.*': ROOT.TFile("sys/vbf_shape_jes_uncs_{}.root".format(jer_suffix) )
   }
   # Determine the relevant JES source file
   f_jes = None
@@ -64,9 +131,16 @@ def get_jes_variations(obj, f_jes, category):
 
   keynames = [x.GetName() for x in f_jes.GetListOfKeys()]
 
+
   if 'vbf' in category:
-    tag = 'ZJetsToNuNu'
-    key_valid =lambda x: (tag in x) and (not 'jesTotal' in x), keynames
+    # In VBF, we'll use two shapes for two types of processes:
+    # 1. Minor backgrounds (top, diboson) -> Use uncs derived from QCD Z(vv)
+    # 2. Signals (ggH, VBF and others) -> Use uncs derived from VBF H(inv)
+    if ('top' in obj.GetName()) or ('diboson' in obj.GetName()):
+        tag = 'ZJetsToNuNu'
+    else:
+        tag = 'VBF_HToInvisible'
+    key_valid = lambda x: (tag in x) and (not 'jesTotal' in x)
     regex_to_remove = '{TAG}20\d\d_'.format(TAG=tag)
   else:
     channel = 'monov' if 'monov' in category else 'monojet'
@@ -77,7 +151,7 @@ def get_jes_variations(obj, f_jes, category):
     variation = re.sub(regex_to_remove, '', key)
     varied_name = obj.GetName()+"_"+variation
     varied_obj = obj.Clone(varied_name)
-      # Multiply by JES factor to get the varied yields
+    # Multiply by JES factor to get the varied yields
     varied_obj.Multiply(f_jes.Get(key))
     # Save the varied histogram into a dict
     varied_hists[varied_name] = varied_obj
@@ -86,9 +160,6 @@ def get_jes_variations(obj, f_jes, category):
 
 def get_photon_id_variations(obj, category):
   '''Get photon ID variations from file, returns all the varied histograms stored in a dictionary.'''
-
-
-
   channel = re.sub("(loose|tight)","", category)
 
   m = re.match(".*(201(6|7|8)).*", category)
@@ -411,7 +482,9 @@ def treat_overflow(obj):
   obj.SetBinError(obj.GetNbinsX()+1, 0)
 
 def create_workspace(fin, fout, category, args):
-  '''Create workspace and write the relevant histograms in it for the given category, returns the workspace.'''
+  """
+  Create workspace and write the relevant histograms in it for the given category, returns the workspace.
+  """
   if args.indir:
     if args.indir=='.':
       fdir = fin
@@ -430,7 +503,7 @@ def create_workspace(fin, fout, category, args):
     variable_name = ("mjj_{0}" if ("vbf" in category) else "met_{0}").format(category)
   else:
     variable_name = "mjj" if ("vbf" in category) else "met"
-  varl = ROOT.RooRealVar(variable_name, variable_name, 0,100000);
+  varl = ROOT.RooRealVar(variable_name, variable_name, 0,100000)
 
   # Helper function
   def write_obj(obj, name):
@@ -473,42 +546,62 @@ def create_workspace(fin, fout, category, args):
     treat_overflow(obj)
     write_obj(obj, name)
 
+    # Save varied shapes for simulation
     if not 'data' in name:
       # JES variations: Get them from the source file and save them to workspace
       jes_varied_hists = get_jes_variations(obj, f_jes, category)
       write_dict(jes_varied_hists)
 
-      # Diboson variations
-      vvprocs = ['wz','ww','zz','zgamma','wgamma']
-      process = "_".join(key.GetName().split("_")[1:])
-      if process in vvprocs:
-        diboson_varied_hists = get_diboson_variations(obj, category, process)
-        write_dict(diboson_varied_hists)
+      # Prefire variations for 2017 (for H(inv) signals only!)
+      m = re.match(".*(201(6|7|8)).*", category)
+      year = m.groups()[0]
+      is_signal = bool(re.match('signal_(vbf|ggh|ggzh|wh|zh|tth).*', obj.GetName()))
+      
+      # Save the prefire varied histograms for VBF H(inv) 2017 samples
+      if year == '2017' and 'vbf' in category and is_signal:
+        pref_varied_hists = get_prefire_variations_for_vbf(obj, category)
+        write_dict(pref_varied_hists)
 
-      if 'gjets' in key.GetName():
-        photon_id_varied_hists = get_photon_id_variations(obj, category)
-        write_dict(photon_id_varied_hists)
+      # Pileup uncertainties
+      if "vbf" in category:
+        pu_varied_hists = get_pileup_variations_for_vbf(obj, category, year)
+        # Write to workspace if we found some histograms to write
+        if bool(pu_varied_hists):
+          write_dict(pu_varied_hists)
 
-      if key.GetName() == 'gjets_qcd':
-        photon_qcd_varied_hists = get_photon_qcd_variations(obj, category)
-        write_dict(photon_qcd_varied_hists)
+      # Following is for monojet/mono-V, if "vbf" is in the category don't do it
+      if not "vbf" in category:
+        # Diboson variations
+        vvprocs = ['wz','ww','zz','zgamma','wgamma']
+        process = "_".join(key.GetName().split("_")[1:])
+        if process in vvprocs:
+          diboson_varied_hists = get_diboson_variations(obj, category, process)
+          write_dict(diboson_varied_hists)
 
-      # mistag variations
-      mistag_varied_hists = get_mistag_variations(obj, category)
-      write_dict(mistag_varied_hists)
-      # Signal theory variations
-      signal_theory_varied_hists = get_signal_theory_variations(obj, category)
-      write_dict(signal_theory_varied_hists)
+        if 'gjets' in key.GetName():
+          photon_id_varied_hists = get_photon_id_variations(obj, category)
+          write_dict(photon_id_varied_hists)
 
-      # MC stat
-      if is_MC_bkg(name):
-        # for MC-based background, merge the stat unc into single nuisance
-        region_name = key.GetName().split("_")[0]
-        to_merge_mc_bkgs[region_name].append(obj)
+        if key.GetName() == 'gjets_qcd':
+          photon_qcd_varied_hists = get_photon_qcd_variations(obj, category)
+          write_dict(photon_qcd_varied_hists)  # mistag variations
+        
+        mistag_varied_hists = get_mistag_variations(obj, category)
+        write_dict(mistag_varied_hists)
+        # Signal theory variations
+        signal_theory_varied_hists = get_signal_theory_variations(obj, category)
+        write_dict(signal_theory_varied_hists)
 
-  # now do the merging of MC-based bkg
-  stat_varied_hists = get_mergedMC_stat_variations(to_merge_mc_bkgs, category)
-  write_dict(stat_varied_hists)
+        # MC stat
+        if is_MC_bkg(name):
+          # for MC-based background, merge the stat unc into single nuisance
+          region_name = key.GetName().split("_")[0]
+          to_merge_mc_bkgs[region_name].append(obj)
+
+  if not "vbf" in category:
+    # now do the merging of MC-based bkg
+    stat_varied_hists = get_mergedMC_stat_variations(to_merge_mc_bkgs, category)
+    write_dict(stat_varied_hists)
 
 
   # Write the workspace

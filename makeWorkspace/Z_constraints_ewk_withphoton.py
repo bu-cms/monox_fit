@@ -7,7 +7,7 @@ from W_constraints import do_stat_unc, add_variation
 # First define simple string which will be used for the datacard
 model = "ewk_zjets"
 
-def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU"):
+def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU", applyZcorrections=False):
 
   # Some setup
   _fin = _f.Get("category_%s"%cid)
@@ -27,21 +27,39 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU"):
   controlmc_w        = _fin.Get("signal_ewkwjets")
   controlmc_g        = _fin.Get("gjets_ewkgjets")
 
+  # Apply per bin corrections to Z production
+  if applyZcorrections:
+    z_corrections = [0.959838, 0.936492, 0.98899, 0.945835, 1.0628, 1.14563, 1.46808, 1.36499, 0.882986]
+
+    # Scale Z production per mjj bin
+    for idx in range(1,target.GetNbinsX()):
+      content = target.GetBinContent(idx)
+      target.SetBinContent(idx, z_corrections[idx-1] * content)
+
   # Create the transfer factors and save them (not here you can also create systematic variations of these
   # transfer factors (named with extention _sysname_Up/Down
-  ZmmScales = target.Clone(); ZmmScales.SetName("ewk_zmm_weights_%s"%cid)
+
+  # EWK Z(vv) / Z(mm)
+  ZmmScales = target.Clone() 
+  ZmmScales.SetName("ewk_zmm_weights_%s"%cid)
   ZmmScales.Divide(controlmc)
   _fOut.WriteTObject(ZmmScales)  # always write out to the directory
 
-  ZeeScales = target.Clone(); ZeeScales.SetName("ewk_zee_weights_%s"%cid)
+  # EWK Z(vv) / Z(ee)
+  ZeeScales = target.Clone() 
+  ZeeScales.SetName("ewk_zee_weights_%s"%cid)
   ZeeScales.Divide(controlmc_e)
   _fOut.WriteTObject(ZeeScales)  # always write out to the directory
 
-  WZScales = target.Clone(); WZScales.SetName("ewk_w_weights_%s"%cid)
+  # EWK Z(vv) / W(lv)
+  WZScales = target.Clone()
+  WZScales.SetName("ewk_w_weights_%s"%cid)
   WZScales.Divide(controlmc_w)
   _fOut.WriteTObject(WZScales)  # always write out to the directory
 
-  PhotonScales = target.Clone(); PhotonScales.SetName("ewk_photon_weights_%s"%cid)
+  # EWK Z(vv) / gamma+jets
+  PhotonScales = target.Clone() 
+  PhotonScales.SetName("ewk_photon_weights_%s"%cid)
   PhotonScales.Divide(controlmc_g)
   _fOut.WriteTObject(PhotonScales)
 
@@ -62,15 +80,25 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU"):
   # TRANSFERFACTORS are what is created above, eg WScales
 
   CRs = [
-  Channel("ewk_dimuon",_wspace,out_ws,cid+'_'+model,ZmmScales,convention=convention)
-  ,Channel("ewk_dielectron",_wspace,out_ws,cid+'_'+model,ZeeScales,convention=convention)
-  ,Channel("ewk_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention)
-  ,Channel("ewk_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention)
+    Channel("ewk_dimuon",_wspace,out_ws,cid+'_'+model,ZmmScales,convention=convention),
+    Channel("ewk_dielectron",_wspace,out_ws,cid+'_'+model,ZeeScales,convention=convention),
+    Channel("ewk_wjetssignal",_wspace,out_ws,cid+'_'+model,WZScales,convention=convention),
+    Channel("ewk_photon",_wspace,out_ws,cid+'_'+model,PhotonScales,convention=convention),
   ]
-  CRs[2].add_nuisance('CMS_veto{YEAR}_t'.format(YEAR=year),     -0.01)
-  CRs[2].add_nuisance('CMS_veto{YEAR}_m'.format(YEAR=year),     -0.02)
-  CRs[2].add_nuisance('CMS_veto{YEAR}_e'.format(YEAR=year),     -0.03)
+
+  # Veto weight uncertainties on Z / W
+  CRs[2].add_nuisance('CMS_eff_tauveto_{YEAR}'.format(YEAR=year),     -0.01)
   
+  CRs[2].add_nuisance('CMS_eff_e_idiso_veto_{YEAR}'.format(YEAR=year),  -0.005)
+  CRs[2].add_nuisance('CMS_eff_e_reco_veto_{YEAR}'.format(YEAR=year),  -0.01)
+
+  CRs[2].add_nuisance('CMS_eff_m_id_veto', -0.001)
+  CRs[2].add_nuisance('CMS_eff_m_iso_veto', -0.002)
+
+  # Pileup uncertainties on ratios
+  for i in range(len(CRs)):
+    CRs[i].add_nuisance('CMS_pileup', 0.01)
+
   # Get the JES/JER uncertainty file for transfer factors
   # Read the split uncertainties from there
   fjes = get_jes_jer_source_file_for_tf(category='vbf')
@@ -92,6 +120,7 @@ def cmodel(cid,nam,_f,_fOut, out_ws, diag, year, convention="BU"):
     add_variation(PhotonScales, fjes, 'znunu_over_gjets{YEAR}_ewk_{VARIATION}Up'.format(YEAR=year-2000, VARIATION=var), "ewk_photon_weights_%s_%s_Up"%(cid, var), _fOut)
     add_variation(PhotonScales, fjes, 'znunu_over_gjets{YEAR}_ewk_{VARIATION}Down'.format(YEAR=year-2000, VARIATION=var), "ewk_photon_weights_%s_%s_Down"%(cid, var), _fOut)
     CRs[3].add_nuisance_shape(var, _fOut)
+
 
   # ############################ USER DEFINED ###########################################################
   # Add systematics in the following, for normalisations use name, relative size (0.01 --> 1%)

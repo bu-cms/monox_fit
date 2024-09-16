@@ -9,7 +9,7 @@ printcards:
 	cat $(TOPDIR)/scripts/make_cards.sh
 
 diag:
-	bash $(TOPDIR)/scripts/diagnostics.sh
+	bash $(TOPDIR)/scripts/diagnostics.sh crFit=$(crFit)
 
 printdiag:
 	cat $(TOPDIR)/scripts/diagnostics.sh
@@ -30,4 +30,7 @@ printlimits:
 	cat $(TOPDIR)/scripts/limits.sh
 
 plots:
-	python $(TOPDIR)/scripts/make_plots.py
+	python $(TOPDIR)/scripts/make_plots.py --crFit=$(crFit)
+
+upload:
+	bash $(TOPDIR)/scripts/upload_to_eos.sh $(versionTag)

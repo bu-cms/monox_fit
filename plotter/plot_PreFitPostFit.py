@@ -10,6 +10,18 @@ blind = False
 
 new_dic = defaultdict(dict)
 
+def get_ylim(region):
+  '''Get y-axis limit for the given region'''
+  mapping = {
+    'singlemuon' : (1e-3,1e3),
+    'singleelectron' : (1e-3,1e3),
+    'dimuon' : (1e-3,1e2),
+    'dielectron' : (1e-3,1e2),
+    'gjets' : (1e-3,1e3),
+    'signal' : (1e-3,1e3),
+  }
+  return mapping[region]
+
 def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=False):
 
   datalab = {"singlemuon":"Wmn", "dimuon":"Zmm", "gjets":"gjets", "signal":"signal", "singleelectron":"Wen", "dielectron":"Zee"}
@@ -55,6 +67,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
         'wgamma',
         'zgamma',
     ]
+  # For VBF, there are two QCD templates: HF noise estimate ("qcd_hf") + nominal QCD estimation ("qcd")
   else:
     mainbkgs = {
             "singlemuon":["ewk_wjets","qcd_wjets"],
@@ -66,6 +79,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
             }
     processes = [
         'qcd',
+        'qcd_hf',
         'qcd_zll',
         'qcdzll',
         'ewkzll',
@@ -90,7 +104,8 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     'gjets'  :"#9A9EAB",
     'qcd_gjets'  :"#9A9EAB",
     'ewk_gjets'  :"#9A9EAB",
-    'qcd'    :"#F1F1F2",
+    'qcd'       :"#F1F1F2",
+    'qcd_hf'    :"#FF0000",
     'top'    :"#CF3721",
     'ewk'    :"#000000",
     'zll'    :"#9A9EAB",
@@ -213,7 +228,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
     dummy.SetMaximum(50*dummy.GetMaximum())
   else:
     dummy.SetMaximum(25*dummy.GetMaximum())
-  dummy.SetMinimum(0.002)
+  dummy.GetYaxis().SetRangeUser(*get_ylim(region))
   dummy.GetYaxis().SetTitleOffset(1.15)
   dummy.Draw()
 
@@ -287,6 +302,7 @@ def plotPreFitPostFit(region,category,ws_file, fitdiag_file,outdir,lumi,year,sb=
       legend.AddEntry(h_postfit['top'], "Top quark", "f")
       # legend.AddEntry(h_postfit['gjets'], "Z(ll)+jets, #gamma+jets", "f")
       legend.AddEntry(h_postfit['qcd'], "QCD", "f")
+      legend.AddEntry(h_postfit['qcd_hf'], "HF Est.", "f")
     if sb:
       legend.AddEntry(h_postfit['totalsig'], "S+B post-fit", "f")
 
