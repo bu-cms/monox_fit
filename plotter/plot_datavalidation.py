@@ -181,6 +181,9 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
                 elif year == 2018:
                     uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monojet_2018_photon_id_extrap_up, 2))
                     uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monojet_2018_photon_id_up, 2))
+                elif year == 2021:
+                    uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monojet_2018_photon_id_extrap_up, 2))
+                    uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monojet_2018_photon_id_up, 2))
 
                 uncertainties.append(scale_uncertainty_histogram(uncFile_photon_scale.Get("photon_pt_scale_monojet_0.02_up"), 0.5))
 
@@ -201,6 +204,9 @@ def dataValidation(region1,region2,category,ws_file, fitdiag_file, outdir, lumi,
                     uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monov_2017_photon_id_extrap_up,2))
                     uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monov_2017_photon_id_up,2))
                 elif year == 2018:
+                    uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monov_2018_photon_id_extrap_up,2))
+                    uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monov_2018_photon_id_up,2))
+                elif year == 2021:
                     uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monov_2018_photon_id_extrap_up,2))
                     uncertainties.append(scale_uncertainty_histogram(uncFile_photon.monov_2018_photon_id_up,2))
                 uncertainties.append(scale_uncertainty_histogram(uncFile_photon_scale.Get("photon_pt_scale_monov_0.02_up"), 0.5))

@@ -91,7 +91,7 @@ def get_photon_id_variations(obj, category):
 
   channel = re.sub("(loose|tight)","", category)
 
-  m = re.match(".*(201(6|7|8)).*", category)
+  m = re.match(".*(20(16|17|18)).*", category)
   year = m.groups()[0]
 
   filler = {
@@ -420,6 +420,7 @@ def create_workspace(fin, fout, category, args):
   else:
     fdir = fin.Get("category_"+category)
   foutdir = fout.mkdir("category_"+category)
+
   # Get the relevant JES source file for the given category
   f_jes = get_jes_file(category)
 

@@ -7,6 +7,7 @@ from plot_datavalidation import dataValidation
 from plot_ratio import plot_ratio
 from plot_diffnuis import plot_nuis
 lumi ={
+    2021: 65.5,
     2017 : 8,
     2018: 59.7
 }
@@ -14,7 +15,7 @@ regions = ['singlemuon','dimuon','gjets','singleelectron','dielectron','signal']
 procs = ['zmm','zee','w_weights','photon','wen','wmn']
 
 ### Years fit separately
-for year in [2017]:
+for year in [2021]:
     ws_file = "root/ws_monojet.root".format(year=year)
     #for tag in ["","_unblind"]:
     for tag in [""]:
@@ -50,7 +51,7 @@ for tag in [""]:
     diffnuis_file = 'diagnostics/diffnuisances_monojet{tag}_combined.root'.format(tag=tag)
     plot_nuis(diffnuis_file, outdir)
 
-    for year in [2017]:
+    for year in [2021]:
         ws_file = "root/ws_monojet.root".format(year=year)
         fitdiag_file = 'diagnostics/fitDiagnostics_monojet{tag}_combined.root'.format(year=year,tag=tag)
         category='monojet_{year}'.format(year=year)
