@@ -1,0 +1,133 @@
+Input directory: /ada_mnt/ada/user/anmalara/WorkingArea/CMSSW_14_1_0_pre4/src/monox_fit/inputs/histograms/recoil/monojet_Run3
+--- INPUT ---
+795897e633feae49115e406a91523231  histograms_monojet.root
+--- REPO INFO ---
+Commit hash: 6a875320ed9deb0609ac4bd7fc7bb34a8396fb8a
+Branch name: dev
+diff --git a/inputs/histograms/recoil/monojet_Run3/histograms_monojet.root b/inputs/histograms/recoil/monojet_Run3/histograms_monojet.root
+index 7a4e843..7b5c54a 100644
+Binary files a/inputs/histograms/recoil/monojet_Run3/histograms_monojet.root and b/inputs/histograms/recoil/monojet_Run3/histograms_monojet.root differ
+diff --git a/monojet/scripts/impacts.sh b/monojet/scripts/impacts.sh
+deleted file mode 100755
+index 8c697da..0000000
+--- a/monojet/scripts/impacts.sh
++++ /dev/null
+@@ -1,40 +0,0 @@
+-#!/bin/bash
+-
+-#remove limit on stack size to prevent related segfault
+-ulimit -s unlimited
+-
+-do_impacts(){
+-    YEAR=${1}
+-    SIGNAL=${2}
+-    mkdir -p ${YEAR}_${SIGNAL}
+-    pushd ${YEAR}_${SIGNAL}
+-    COMMON_OPTS="-t -1 --expectSignal=${SIGNAL} --parallel=4 --rMin=-1 --autoRange 5 --squareDistPoiStep"
+-    combineTool.py -M Impacts \
+-                   -d ../../cards/card_monojet_${YEAR}.root \
+-                   -m 125 \
+-                   --doInitialFit \
+-                   --robustFit 1 \
+-                   ${COMMON_OPTS}
+-    combineTool.py -M Impacts -d ../../cards/card_monojet_${YEAR}.root \
+-                   -m 125 \
+-                   --robustFit 1 \
+-                   --doFits \
+-                    ${COMMON_OPTS}
+-    combineTool.py -M Impacts \
+-                   -d ../../cards/card_monojet_${YEAR}.root \
+-                   -m 125 \
+-                   -o impacts.json \
+-                    ${COMMON_OPTS}
+-    popd
+-    plotImpacts.py -i ${YEAR}_${SIGNAL}/impacts.json -o impacts_monojet_${YEAR}_${SIGNAL}
+-}
+-export -f do_impacts
+-### Impacts
+-mkdir -p impacts
+-pushd impacts
+-for SIGNAL in "0.0"; do
+-    for YEAR in 2017; do
+-        nohup bash -c "do_impacts $YEAR $SIGNAL" >  impacts_${YEAR}_${SIGNAL}.log &
+-    done
+-done
+-popd
+diff --git a/monojet/scripts/impacts_condor.sh b/monojet/scripts/impacts_condor.sh
+deleted file mode 100644
+index 8650feb..0000000
+--- a/monojet/scripts/impacts_condor.sh
++++ /dev/null
+@@ -1,55 +0,0 @@
+-#!/bin/bash
+-
+-#remove limit on stack size to prevent related segfault
+-ulimit -s unlimited
+-
+-do_impacts(){
+-    YEAR=${1}
+-    SIGNAL=${2}
+-    mkdir -p ${YEAR}_${SIGNAL}
+-    pushd ${YEAR}_${SIGNAL}
+-    COMMON_OPTS="-t -1 --expectSignal=${SIGNAL} --parallel=4 --rMin=-1 --autoRange 5 --squareDistPoiStep --cminDefaultMinimizerStrategy 0"
+-    combineTool.py -M Impacts \
+-                   -d ../../cards/card_monojet_${YEAR}.root \
+-                   -m 125 \
+-                   --doInitialFit \
+-                   --robustFit 1 \
+-                   ${COMMON_OPTS}
+-
+-    # Submit the hard work to condor
+-    TAG=task_${YEAR}_${SIGNAL}_${RANDOM}
+-    combineTool.py -M Impacts -d ../../cards/card_monojet_${YEAR}.root \
+-                   -m 125 \
+-                   --robustFit 1 \
+-                   --doFits \
+-                   --job-mode condor \
+-                   --task-name ${TAG} \
+-                   --sub-opts '+MaxRuntime=3600' \
+-                    ${COMMON_OPTS}
+-
+-    # Wait for condor jobs to return
+-    date
+-    for i in $(seq 1 1 10); do
+-        condor_wait -debug -status ${TAG}*.log && break;
+-        sleep $((i*120))
+-    done
+-    date
+-    sleep 60
+-    combineTool.py -M Impacts \
+-                   -d ../../cards/card_monojet_${YEAR}.root \
+-                   -m 125 \
+-                   -o impacts.json \
+-                    ${COMMON_OPTS}
+-    popd
+-    plotImpacts.py -i ${YEAR}_${SIGNAL}/impacts.json -o impacts_monojet_${YEAR}_${SIGNAL}
+-}
+-export -f do_impacts
+-### Impacts
+-mkdir -p impacts
+-pushd impacts
+-for SIGNAL in "0.0"; do
+-    for YEAR in combined; do
+-        nohup bash -c "do_impacts $YEAR $SIGNAL" >  impacts_${YEAR}_${SIGNAL}.log &
+-    done
+-done
+-popd
+diff --git a/utils/datacards/do_impacts.sh b/utils/datacards/do_impacts.sh
+index 975ac5d..ab6561f 100644
+--- a/utils/datacards/do_impacts.sh
++++ b/utils/datacards/do_impacts.sh
+@@ -34,7 +34,7 @@ EXTRA_OPTS+=(--squareDistPoiStep)
+ EXTRA_OPTS+=(-t -1)  # Asimov toys
+ 
+ PLOT_OPTS=()
+-PLOT_OPTS+=(--blind)
++# PLOT_OPTS+=(--blind)
+ PLOT_OPTS+=(--summary)
+ 
+ PARALLEL=50
+
+--- OUTPUT ---
+8d970aaf9fc9a5b594f9b8ac54ee05e0  combined_model_monojet.root
+fa3c3bab4f1b4fd187497972f5780b30  ws_monojet.root

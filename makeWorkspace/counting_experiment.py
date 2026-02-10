@@ -1,20 +1,26 @@
-import ROOT as r
+import ROOT  # type: ignore
 import sys
 import array
 import re
-from HiggsAnalysis.CombinedLimit.ModelTools import *
+from HiggsAnalysis.CombinedLimit.ModelTools import SafeWorkspaceImporter  # type: ignore
+from utils.workspace.generic import safe_import, suppress_roofit_info
+from utils.generic.logger import initialize_colorized_logger
+
+log_level = "INFO"
+logger = initialize_colorized_logger(log_level=log_level)
 
 MAXBINS = 100
 
+
 def naming_convention(id, catid, convention="BU"):
     if convention == "BU":
-        return "model_mu_cat_%s_bin_%d" % (catid, id)
+        return f"model_mu_cat_{catid}_bin_{id}"
     elif convention == "IC":
         m = re.match(".*(201\d).*", catid)
         if not m or len(m.groups()) > 1:
             raise RuntimeError("Cannot derive year from category ID: " + catid)
         year = m.groups()[0]
-        return "MTR_%s_QCDZ_SR_bin%d" % (year, id+1)
+        return f"MTR_{year}_QCDZ_SR_bin{id + 1}"
     else:
         raise RuntimeError("Unknown naming convention: " + convention)
 
@@ -22,13 +28,14 @@ def naming_convention(id, catid, convention="BU"):
 def getNormalizedHist(hist):
     thret = hist.Clone()
     nb = hist.GetNbinsX()
-    for b in range(1, nb+1):
-        sfactor = 1./hist.GetBinWidth(b)
-        thret.SetBinContent(b, hist.GetBinContent(b)*sfactor)
-        thret.SetBinError(b, hist.GetBinError(b)*sfactor)
+    for b in range(1, nb + 1):
+        sfactor = 1.0 / hist.GetBinWidth(b)
+        thret.SetBinContent(b, hist.GetBinContent(b) * sfactor)
+        thret.SetBinError(b, hist.GetBinError(b) * sfactor)
         # thret.GetYaxis().SetTitle("Events")
         thret.GetYaxis().SetTitle("Events/GeV")
     return thret
+
 
 class Bin:
     def __init__(self, category, catid, chid, id, var, datasetname, wspace, wspace_out, xmin, xmax, convention):
@@ -36,14 +43,14 @@ class Bin:
         self.chid = chid  # This is the thing that links two bins from different controls togeher
         self.id = id
         self.catid = catid
-        #self.type_id   = 10*MAXBINS*catid+MAXBINS*chid+id
+        # self.type_id   = 10*MAXBINS*catid+MAXBINS*chid+id
 
         self.convention = convention
 
         if self.convention == "BU":
-            self.binid = "cat_%s_ch_%s_bin_%d" % (catid, chid, id)
+            self.binid = f"cat_{catid}_ch_{chid}_bin_{id}"
         elif self.convention == "IC":
-            self.binid = "cat_%s_ch_%s_bin%d" % (catid, chid, id+1)
+            self.binid = f"cat_{catid}_ch_{chid}_bin{id + 1}"
 
         self.wspace_out = wspace_out
         self.wspace_out._safe_import = SafeWorkspaceImporter(self.wspace_out)
@@ -51,13 +58,14 @@ class Bin:
         self.set_wspace(wspace)
 
         self.var = self.wspace_out.var(var.GetName())
-        #self.dataset   = self.wspace.data(datasetname)
+        # self.dataset   = self.wspace.data(datasetname)
 
-        self.rngename = "rnge_%s" % self.binid
-        self.var.setRange(self.rngename, xmin, xmax)
+        self.rngename = f"rnge_{self.binid}"
         self.xmin = xmin
         self.xmax = xmax
-        self.cen = (xmax+xmin)/2
+        self.cen = (self.xmax + self.xmin) / 2
+        with suppress_roofit_info(debug=log_level == "DEBUG"):
+            self.var.setRange(self.rngename, self.xmin, self.xmax)
 
         self.initY = 0
         self.initE = 0
@@ -66,88 +74,82 @@ class Bin:
         self.binerror = 0
         self.binerror_m = 0
 
-        # self.dataset.sumEntries("%s>=%g && %s<%g "%(var.GetName(),xmin,var.GetName(),xmax))
         self.o = 1
-        # r.RooRealVar("observed","Observed Events bin",1)
+        # ROOT.RooRealVar("observed","Observed Events bin",1)
         self.obs = self.wspace_out.var("observed")
 
         # <-------------------------- Check this is cool
-        self.argset = r.RooArgSet(wspace.var(self.var.GetName()))
-        self.obsargset = r.RooArgSet(self.wspace_out.var(
-            "observed"), self.wspace_out.cat("bin_number"))
+        self.argset = ROOT.RooArgSet(wspace.var(self.var.GetName()))
+        self.obsargset = ROOT.RooArgSet(self.wspace_out.var("observed"), self.wspace_out.cat("bin_number"))
 
         self.b = 0
-        #self.constBkg = True
+        # self.constBkg = True
 
     def add_background(self, bkg):
         if "Purity" in bkg:
-            tmp_pfunc = r.TF1("tmp_bkg_%s" % self.id, bkg.split(":")[-1])  # ?
-            b = self.o*(1-tmp_pfunc.Eval(self.cen))
-            #self.constBkg = False
+            tmp_pfunc = ROOT.TF1(f"tmp_bkg_{self.id}", bkg.split(":")[-1])  # ?
+            b = self.o * (1 - tmp_pfunc.Eval(self.cen))
+            # self.constBkg = False
         else:
             bkg_set = self.wspace.data(bkg)
-            #if not self.wspace_out.data(bkg): self.wspace_out._import(bkg)
-            b = bkg_set.sumEntries("%s>=%g && %s<%g " % (
-                self.var.GetName(), self.xmin, self.var.GetName(), self.xmax))
+            # if not self.wspace_out.data(bkg): safe_import(workspace=self.wspace_out, obj=bkg)
+            var = self.var.GetName()
+            b = bkg_set.sumEntries(f"{var}>={self.xmin} && {var}<{self.xmax} ")
 
         # Now model nuisances for background
         nuisances = self.cr.ret_bkg_nuisances()
         if len(nuisances) > 0:
             prod = 0
-            print ("Is this really true? How many nuisance:", len(nuisances))
+            print("Is this really true? How many nuisance:", len(nuisances))
 
             if len(nuisances) > 1:
-                nuis_args = r.RooArgList()
+                nuis_args = ROOT.RooArgList()
                 for nuis in nuisances:
-                    print ("Adding Background Nuisance ", nuis)
+                    print("Adding Background Nuisance ", nuis)
                     # Nuisance*Scale is the model
-                    #form_args = r.RooArgList(self.wspace_out.var("nuis_%s"%nuis),self.wspace_out.function("sys_function_%s_%s"%(nuis,self.binid)))
-                    print ("Trying to continue", self.wspace_out.function(
-                        "sys_function_%s_%s" % (nuis, self.binid)).GetName())
-                    print ("Does it have an attribute:", self.wspace_out.function(
-                        "sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp"))
-                    if (self.wspace_out.function("sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp")):
+                    func_name = f"sys_function_{nuis}_{self.binid}"
+                    print("Trying to continue", self.wspace_out.function(func_name).GetName())
+                    print("Does it have an attribute:", self.wspace_out.function(func_name).getAttribute("temp"))
+                    if self.wspace_out.function(func_name).getAttribute("temp"):
                         continue
-                    form_args = r.RooArgList(self.wspace_out.function(
-                        "sys_function_%s_%s" % (nuis, self.binid)))
-                    delta_nuis = r.RooFormulaVar("delta_bkg_%s_%s" % (
-                        self.binid, nuis), "Delta Change from %s" % nuis, "1+@0", form_args)
-                    self.wspace_out._import(
-                        delta_nuis, r.RooFit.RecycleConflictNodes())
-                    nuis_args.add(self.wspace_out.function(
-                        delta_nuis.GetName()))
-                prod = r.RooProduct("prod_background_%s" %
-                                    self.binid, "Nuisance Modifier", nuis_args)
+                    form_args = ROOT.RooArgList(self.wspace_out.function(func_name))
+                    delta_nuis = ROOT.RooFormulaVar(f"delta_bkg_{self.binid}_{nuis}", f"Delta Change from {nuis}", "1+@0", form_args)
+                    safe_import(workspace=self.wspace_out, obj=delta_nuis)
+                    nuis_args.add(self.wspace_out.function(delta_nuis.GetName()))
+                prod = ROOT.RooProduct(f"prod_background_{self.binid}", "Nuisance Modifier", nuis_args)
             else:
-                print ("Adding Background Nuisance ", nuisances[0])
+                print("Adding Background Nuisance ", nuisances[0])
                 # if (self.wspace_out.function.getAttribute("temp")):
-                ##  prod = r.RooFormulaVar("prod_background_%s"%self.binid,"Delta Change in Background from %s"%nuisances[0],"1",r.RooArgList())
                 # else:
-                prod = r.RooFormulaVar("prod_background_%s" % self.binid, "Delta Change in Background from %s" %
-                                       nuisances[0], "1+@0", r.RooArgList(self.wspace_out.function("sys_function_%s_%s" % (nuisances[0], self.binid))))
+                prod = ROOT.RooFormulaVar(
+                    f"prod_background_{self.binid}",
+                    f"Delta Change in Background from {nuisances[0]}",
+                    "1+@0",
+                    ROOT.RooArgList(self.wspace_out.function(f"sys_function_{nuisances[0]}_{self.binid}")),
+                )
 
-            self.b = r.RooFormulaVar(
-                "background_%s" % self.binid, "Number of expected background events in %s" % self.binid, "@0*%f" % b, r.RooArgList(prod))
+            self.b = ROOT.RooFormulaVar(f"background_{self.binid}", f"Number of expected background events in {self.binid}", f"@0*{b}", ROOT.RooArgList(prod))
         else:
-            self.b = r.RooFormulaVar("background_%s" % self.binid, "Number of expected background events in %s" %
-                                     self.binid, "@0", r.RooArgList(r.RooFit.RooConst(b)))
-        self.wspace_out._import(self.b)
+            self.b = ROOT.RooFormulaVar(
+                f"background_{self.binid}", f"Number of expected background events in {self.binid}", "@0", ROOT.RooArgList(ROOT.RooFit.RooConst(b))
+            )
+        safe_import(workspace=self.wspace_out, obj=self.b)
         self.b = self.wspace_out.function(self.b.GetName())
 
     def ret_initY(self):
         return self.initY
 
     def set_initY(self, mcdataset):
-
-        print ("INIT Y: ", "%s>=%g && %s<%g" % (self.var.GetName(), self.xmin, self.var.GetName(
-        ), self.xmax), self.rngename, self.wspace, self.wspace.data(mcdataset), mcdataset)
-        self.initY = self.wspace.data(mcdataset).sumEntries("%s>=%g && %s<%g" % (
-            self.var.GetName(), self.xmin, self.var.GetName(), self.xmax), self.rngename)
+        var = self.var.GetName()
+        sum_formula = f"{var}>={self.xmin} && {var}<{self.xmax}"
+        logger.debug(f"INIT Y: {sum_formula} {self.rngename} {self.wspace} {self.wspace.data(mcdataset)} {mcdataset}")
+        self.initY = self.wspace.data(mcdataset).sumEntries(sum_formula, self.rngename)
 
     def set_initE_precorr(self):
         return 0
-        self.initE_precorr = self.wspace_out.var(naming_convention(
-            self.id, self.catid, self.convention)).getVal()*self.wspace_out.var(self.sfactor.GetName()).getVal()
+        self.initE_precorr = (
+            self.wspace_out.var(naming_convention(self.id, self.catid, self.convention)).getVal() * self.wspace_out.var(self.sfactor.GetName()).getVal()
+        )
 
     def set_initE(self):
         return 0
@@ -157,100 +159,93 @@ class Bin:
 
     def set_label(self, cat):
         self.categoryname = cat.GetName()
-        # self.wspace._import(cat,r.RooFit.RecycleConflictNodes())
 
     def set_wspace(self, w):
         self.wspace = w
-        #self.wspace._import = getattr(self.wspace,"import") # workaround: import is a python keyword
         self.wspace._safe_import = SafeWorkspaceImporter(self.wspace)
 
     def set_sfactor(self, val):
-        #print "Scale Factor for " ,self.binid,val
-        if self.wspace_out.var("sfactor_%s" % self.binid):
+        # print "Scale Factor for " ,self.binid,val
+        if self.wspace_out.var(f"sfactor_{self.binid}"):
             self.sfactor.setVal(val)
             self.wspace_out.var(self.sfactor.GetName()).setVal(val)
         else:
-            self.sfactor = r.RooRealVar(
-                "sfactor_%s" % self.binid, "Scale factor for bin %s" % self.binid, val, 0.00001, 10000)
+            self.sfactor = ROOT.RooRealVar(f"sfactor_{self.binid}", f"Scale factor for bin {self.binid}", val, 0.00001, 10000)
             self.sfactor.removeRange()
             self.sfactor.setConstant()
-            self.wspace_out._import(
-                self.sfactor, r.RooFit.RecycleConflictNodes())
+            safe_import(workspace=self.wspace_out, obj=self.sfactor)
 
     def setup_expect_var(self, functionalForm=""):
-        print (functionalForm)
+
+        # Either fetch the QCD Znunu in SR yield,
+        # or the transfer factor and nuisances from the category this process depends on
+        logger.debug(f"functionalForm: {functionalForm}")
         if not len(functionalForm):
             if not self.wspace_out.var(naming_convention(self.id, self.catid, self.convention)):
-                self.model_mu = r.RooRealVar(
-                    naming_convention(self.id, self.catid, self.convention),
-                    "Model of N expected events in %d" % self.id,
-                    self.initY,
-                    0,
-                    3*self.initY
+                # RooRealVar containing `initY` (for `qcd_zjets`, this is the QCD Znunu in SR yield)
+                self.model_mu = ROOT.RooRealVar(
+                    naming_convention(self.id, self.catid, self.convention), f"Model of N expected events in {self.id}", self.initY, 0, 3 * self.initY
                 )
-                self.model_mu.removeMax()
+                # self.model_mu.removeMax() TODO
             else:
-                self.model_mu = self.wspace_out.var(
-                    naming_convention(self.id, self.catid, self.convention))
+                self.model_mu = self.wspace_out.var(naming_convention(self.id, self.catid, self.convention))
         else:
-            print ("Setting up dependence!!")
+            logger.debug("Setting up dependence!!")
             if self.convention == "BU":
-                DEPENDANT = "%s_bin_%d" % (functionalForm, self.id)
+                DEPENDANT = f"{functionalForm}_bin_{self.id}"
             else:
-                DEPENDANT = "%s_bin%d" % (functionalForm, self.id+1)
+                DEPENDANT = f"{functionalForm}_bin{self.id + 1}"
 
-            self.model_mu = self.wspace_out.function("pmu_%s" % (DEPENDANT))
+            # Fetch the expected yield from the category this one depends on (pmu_cat_{category}_{BASE}_ch_{CONTROL})
+            self.model_mu = self.wspace_out.function(f"pmu_{DEPENDANT}")
+            if not self.model_mu:
+                logger.critical(f"Missing pmu_{DEPENDANT} from wspace_out.", exception_cls=ValueError)
 
-        arglist = r.RooArgList(
-            (self.model_mu), self.wspace_out.var(self.sfactor.GetName()))
+        arglist = ROOT.RooArgList((self.model_mu), self.wspace_out.var(self.sfactor.GetName()))
 
         # Multiply by each of the uncertainties in the control region, dont alter the Poisson pdf, we will add the constraint at the end. Actually we won't use this right now.
         nuisances = self.cr.ret_nuisances()
         if len(nuisances) > 0:
             prod = 0
             if len(nuisances) > 1:
-                nuis_args = r.RooArgList()
+                nuis_args = ROOT.RooArgList()
+                # Fetch each nuisance, and create a "delta" formula (1 + nuisance effect), store it for the product
                 for nuis in nuisances:
-
-                    if (self.wspace_out.function("sys_function_%s_%s" % (nuis, self.binid)).getAttribute("temp")):
+                    # Skip nuisances that have the "temp" Attribute.
+                    # This attribute is given to nuisances in bins where the difference between up and down variation is 0
+                    # Effectively, this skips the EWK theory variations and statistical variations, which are decorelated by bin,
+                    # for the bins they don't affect.
+                    if self.wspace_out.function(f"sys_function_{nuis}_{self.binid}").getAttribute("temp"):
                         continue
 
-                    print ("Adding Nuisance ", nuis)
+                    logger.debug(f"Adding Nuisance {nuis}")
                     # Nuisance*Scale is the model
-                    #form_args = r.RooArgList(self.wspace_out.var("nuis_%s"%nuis),self.wspace_out.function("sys_function_%s_%s"%(nuis,self.binid)))
-                    form_args = r.RooArgList(self.wspace_out.function(
-                        "sys_function_%s_%s" % (nuis, self.binid)))
-                    delta_nuis = r.RooFormulaVar("delta_%s_%s" % (
-                        self.binid, nuis), "Delta Change from %s" % nuis, "1+@0", form_args)
-                    self.wspace_out._import(
-                        delta_nuis, r.RooFit.RecycleConflictNodes())
-                    nuis_args.add(self.wspace_out.function(
-                        delta_nuis.GetName()))
+                    form_args = ROOT.RooArgList(self.wspace_out.function(f"sys_function_{nuis}_{self.binid}"))
+                    delta_nuis = ROOT.RooFormulaVar(f"delta_{self.binid}_{nuis}", f"Delta Change from {nuis}", "1+@0", form_args)
+                    safe_import(workspace=self.wspace_out, obj=delta_nuis)
+                    nuis_args.add(self.wspace_out.function(delta_nuis.GetName()))
 
-                prod = r.RooProduct("prod_%s" % self.binid,
-                                    "Nuisance Modifier", nuis_args)
+                prod = ROOT.RooProduct(f"prod_{self.binid}", "Nuisance Modifier", nuis_args)
             else:
-                print ("Adding Nuisance ", nuisances[0])
-                prod = r.RooFormulaVar("prod_%s" % self.binid, "Delta Change from %s" % nuisances[0], "1+@0", r.RooArgList(
-                    self.wspace_out.function("sys_function_%s_%s" % (nuisances[0], self.binid))))
+                logger.debug(f"Adding Nuisance {nuisances[0]}")
+                prod = ROOT.RooFormulaVar(
+                    f"prod_{self.binid}",
+                    f"Delta Change from {nuisances[0]}",
+                    "1+@0",
+                    ROOT.RooArgList(self.wspace_out.function(f"sys_function_{nuisances[0]}_{self.binid}")),
+                )
             arglist.add(prod)
-            self.pure_mu = r.RooFormulaVar(
-                "pmu_%s" % self.binid, "Number of expected (signal) events in %s" % self.binid, "(@0*@1)*@2", arglist)
+            # Now create the formula for the expected number of events, which is the product of the QCD Znunu yield, transfer factor and nuisances
+            self.pure_mu = ROOT.RooFormulaVar(f"pmu_{self.binid}", f"Number of expected (signal) events in {self.binid}", "(@0*@1)*@2", arglist)
         else:
-            self.pure_mu = r.RooFormulaVar(
-                "pmu_%s" % self.binid, "Number of expected (signal) events in %s" % self.binid, "(@0*@1)", arglist)
+            self.pure_mu = ROOT.RooFormulaVar(f"pmu_{self.binid}", f"Number of expected (signal) events in {self.binid}", "(@0*@1)", arglist)
         # Finally we add in the background
-        bkgArgList = r.RooArgList(self.pure_mu)
-        #if self.constBkg: self.mu = r.RooFormulaVar("mu_%s"%self.binid,"Number of expected events in %s"%self.binid,"%f+@0"%self.b,bkgArgList)
-        # else : self.mu = r.RooFormulaVar("mu_%s"%self.binid,"Number of expected events in %s"%self.binid,"@0/%f"%self.b,bkgArgList)
-        self.mu = r.RooFormulaVar(
-            "mu_%s" % self.binid, "Number of expected events in %s" % self.binid, "@0", bkgArgList)
+        bkgArgList = ROOT.RooArgList(self.pure_mu)
+        self.mu = ROOT.RooFormulaVar(f"mu_{self.binid}", f"Number of expected events in {self.binid}", "@0", bkgArgList)
 
-        #self.mu = r.RooFormulaVar("mu_%s"%self.binid,"Number of expected events in %s"%self.binid,"@0/(@1*@2)",r.RooArgList(self.integral,self.sfactor,self.pdfFullInt))
-        self.wspace_out._import(self.mu, r.RooFit.RecycleConflictNodes())
-        self.wspace_out._import(self.obs, r.RooFit.RecycleConflictNodes())
-        self.wspace_out.factory(
-            "Poisson::pdf_%s(observed,mu_%s)" % (self.binid, self.binid))
+        safe_import(workspace=self.wspace_out, obj=self.mu)
+        # safe_import(workspace=self.wspace_out, obj=self.obs)
+        self.wspace_out.factory(f"Poisson::pdf_{self.binid}(observed,mu_{self.binid})")
 
     def add_to_dataset(self):
         return
@@ -259,11 +254,10 @@ class Bin:
         # self.wspace_out.cat(self.categoryname).setIndex(self.type_id)
         lv = self.wspace_out.var("observed")
         lc = self.wspace_out.cat("bin_number")
-        local_obsargset = r.RooArgSet(lv, lc)
+        local_obsargset = ROOT.RooArgSet(lv, lc)
         if not self.wspace_out.data("combinedData"):
-            obsdata = r.RooDataSet(
-                "combinedData", "Data in all Bins", local_obsargset)
-            self.wspace_out._import(obsdata)
+            obsdata = ROOT.RooDataSet("combinedData", "Data in all Bins", local_obsargset)
+            safe_import(workspace=self.wspace_out, obj=obsdata)
         obsdata = self.wspace_out.data("combinedData")
         obsdata.addFast(local_obsargset)
 
@@ -273,9 +267,6 @@ class Bin:
     def ret_binid(self):
         return self.binid
 
-    def ret_observed_dset(self):
-        return self.wspace_out.data(dsname)
-
     def ret_observed(self):
         return self.o
 
@@ -283,10 +274,10 @@ class Bin:
         return self.binerror
 
     def add_err(self, e):
-        self.binerror = (self.binerror**2+e**2)**0.5
+        self.binerror = (self.binerror**2 + e**2) ** 0.5
 
     def add_model_err(self, e):
-        self.binerror_m = (self.binerror_m**2+e**2)**0.5
+        self.binerror_m = (self.binerror_m**2 + e**2) ** 0.5
 
     def ret_expected(self):
         return self.wspace_out.function(self.mu.GetName()).getVal()
@@ -303,20 +294,39 @@ class Bin:
         return 0  # self.wspace_out.function(self.b.GetName()).getVal()
 
     def ret_correction(self):
-        return (self.wspace_out.var(self.model_mu.GetName()).getVal())/self.initY
+        return (self.wspace_out.var(self.model_mu.GetName()).getVal()) / self.initY
 
     def ret_correction_err(self):
-        return self.ret_model_err()/self.initY
+        return self.ret_model_err() / self.initY
 
     def ret_model(self):
         return self.wspace_out.var(self.model_mu.GetName()).getVal()
 
     def Print(self):
-        print ("Channel/Bin -> ", self.chid, self.binid, ", Var -> ", self.var.GetName(
-        ), ", Range -> ", self.xmin, self.xmax, "MODEL MU (prefit/current state)= ", self.initY, "/", self.ret_model())
-        print (" .... observed = ", self.o, ", expected = ", self.wspace_out.function(self.mu.GetName()).getVal(
-        ), " (of which %f is background)" % self.ret_background(), ", scale factor = ", self.wspace_out.function(self.sfactor.GetName()).getVal())
-        print (", Pre-corrections (nuisance at 0) expected (-bkg) ", self.initE_precorr)
+        print(
+            "Channel/Bin -> ",
+            self.chid,
+            self.binid,
+            ", Var -> ",
+            self.var.GetName(),
+            ", Range -> ",
+            self.xmin,
+            self.xmax,
+            "MODEL MU (prefit/current state)= ",
+            self.initY,
+            "/",
+            self.ret_model(),
+        )
+        print(
+            " .... observed = ",
+            self.o,
+            ", expected = ",
+            self.wspace_out.function(self.mu.GetName()).getVal(),
+            f" (of which {self.ret_background()} is background)",
+            ", scale factor = ",
+            self.wspace_out.function(self.sfactor.GetName()).getVal(),
+        )
+        print(", Pre-corrections (nuisance at 0) expected (-bkg) ", self.initE_precorr)
 
 
 class Channel:
@@ -325,11 +335,11 @@ class Channel:
         self.catid = catid
         self.chid = cname
         self.scalefactors = scalefactors
-        self.chname = "ControlRegion_%s" % self.chid
+        self.chname = f"ControlRegion_{self.chid}"
         self.backgroundname = ""
         self.wspace_out = wspace_out
         self.wspace_out._safe_import = SafeWorkspaceImporter(self.wspace_out)
-        #self.wspace_out = getattr(self.wspace_out, "import")
+        # self.wspace_out = getattr(self.wspace_out, "import")
         self.set_wspace(wspace)
         self.nuisances = []
         self.bkg_nuisances = []
@@ -341,170 +351,128 @@ class Channel:
     def ret_title(self):
         return self.crname
 
-    def add_systematic_shape(self, sys, file):
-        sys.exit("Nothing Will Happen with add_systematic, use add_nuisance")
-        sfup = self.scalefactors.GetName()+"_%s_" % sys+"Up"
-        sfdn = self.scalefactors.GetName()+"_%s_" % sys+"Down"
-        print ("Looking for systematic shapes ... %s, %s" % (sfup, sfdn))
-        try:
-            print (file.Get(sfup).GetName())
-            print (file.Get(sfdn).GetName())
-        except AttributeError:
-            print ("Missing one of ", sfup, sfdn, " in ", file.GetName())
-            print ("Following is in directory ")
-            file.Print()
-            sys.exit()
-        self.systematics[sys] = [file.Get(sfup), file.Get(sfdn)]
-
-    def add_systematic_yield(self, syst, kappa):
-        sys.exit("Nothing Will Happen with add_systematic, use add_nuisance")
-        sfup = self.scalefactors.GetName()+"_%s_" % sys+"Up"
-        sfdn = self.scalefactors.GetName()+"_%s_" % sys+"Down"
-        sfup = self.scalefactors.Clone()
-        sfup.SetName(self.scalefactors.GetName()+"_%s_" % syst+"Up")
-        sfdn = self.scalefactors.Clone()
-        sfdn.SetName(self.scalefactors.GetName()+"_%s_" % syst+"Down")
-        # log-normal scalefactors
-        sfup.Scale(1+kappa)
-        sfdn.Scale(1./(1+kappa))
-        self.systematics[syst] = [sfup, sfdn]
-
     def add_nuisance(self, name, size, bkg=False):
-        #print "Error, Nuisance parameter model not supported fully for shape variations, dont use it!"
-        if not(self.wspace_out.var("%s" % name)):
-            #nuis = r.RooRealVar("nuis_%s"%name,"Nuisance - %s"%name,0,-3,3);
-            nuis = r.RooRealVar("%s" % name, "Nuisance - %s" % name, 0, -3, 3)
+        # print "Error, Nuisance parameter model not supported fully for shape variations, dont use it!"
+        if not (self.wspace_out.var(name)):
+            nuis = ROOT.RooRealVar(name, f"Nuisance - {name}", 0, -3, 3)
             nuis.setAttribute("NuisanceParameter_EXTERNAL", True)
             if bkg:
                 nuis.setAttribute("BACKGROUND_NUISANCE", True)
-            self.wspace_out._import(nuis)
-            cont = r.RooGaussian("const_%s" % name, "Constraint - %s" % name, self.wspace_out.var(
-                nuis.GetName()), r.RooFit.RooConst(0), r.RooFit.RooConst(1))
-            self.wspace_out._import(cont)
+            safe_import(workspace=self.wspace_out, obj=nuis)
+            cont = ROOT.RooGaussian(
+                f"const_{name}", f"Constraint - {name}", self.wspace_out.var(nuis.GetName()), ROOT.RooFit.RooConst(0), ROOT.RooFit.RooConst(1)
+            )
+            safe_import(workspace=self.wspace_out, obj=cont)
 
         # run through all of the bins in the control regions and create a function to interpolate
         for b in range(self.nbins):
             if self.convention == "BU":
-                fname = "sys_function_%s_cat_%s_ch_%s_bin_%d" % (
-                    name, self.catid, self.chid, b)
+                fname = f"sys_function_{name}_cat_{self.catid}_ch_{self.chid}_bin_{ b}"
             else:
-                fname = "sys_function_%s_cat_%s_ch_%s_bin%d" % (
-                    name, self.catid, self.chid, b+1)
-            func = r.RooFormulaVar(
-                fname,
-                "Systematic Varation",
-                "@0*%f" % size, r.RooArgList(self.wspace_out.var("%s" % name))
-            )
+                fname = f"sys_function_{name}_cat_{self.catid}_ch_{self.chid}_bin{b + 1}"
+            func = ROOT.RooFormulaVar(fname, "Systematic Variation", f"@0*{size}", ROOT.RooArgList(self.wspace_out.var(name)))
             if not self.wspace_out.function(func.GetName()):
-                self.wspace_out._import(func)
-        # else
-        #  nuis = self.wspace_out.var("nuis_%s"%name)
+                safe_import(workspace=self.wspace_out, obj=func)
         if bkg:
             self.bkg_nuisances.append(name)
         else:
             self.nuisances.append(name)
 
     def add_nuisance_shape(self, name, file, setv="", functype="quadratic"):
-        if not(self.wspace_out.var("%s" % name)):
-            nuis = r.RooRealVar("%s" % name, "Nuisance - %s" % name, 0, -3, 3)
+        if not (self.wspace_out.var(name)):
+            nuis = ROOT.RooRealVar(name, f"Nuisance - {name}", 0, -3, 3)
             nuis.setAttribute("NuisanceParameter_EXTERNAL", True)
-            self.wspace_out._import(nuis)
-            nuis_IN = r.RooRealVar("nuis_IN_%s" % name,
-                                   "Constraint Mean - %s" % name, 0, -10, 10)
+            safe_import(workspace=self.wspace_out, obj=nuis)
+            nuis_IN = ROOT.RooRealVar(f"nuis_IN_{name}", f"Constraint Mean - {name}", 0, -10, 10)
             nuis_IN.setConstant()
-            self.wspace_out._import(nuis_IN)
+            safe_import(workspace=self.wspace_out, obj=nuis_IN)
 
-            cont = r.RooGaussian("const_%s" % name, "Constraint - %s" % name, self.wspace_out.var(
-                nuis.GetName()), self.wspace_out.var(nuis_IN.GetName()), r.RooFit.RooConst(1))
-            self.wspace_out._import(cont)
+            cont = ROOT.RooGaussian(
+                f"const_{name}",
+                f"Constraint - {name}",
+                self.wspace_out.var(nuis.GetName()),
+                self.wspace_out.var(nuis_IN.GetName()),
+                ROOT.RooFit.RooConst(1),
+            )
+            safe_import(workspace=self.wspace_out, obj=cont)
 
-        sfup = self.scalefactors.GetName()+"_%s_" % name+"Up"
-        sfdn = self.scalefactors.GetName()+"_%s_" % name+"Down"
-        print ("Looking for systematic shapes ... %s,%s" % (sfup, sfdn))
-        sysup, sysdn = file.Get(sfup), file.Get(sfdn)
+        sf_base = f"{self.scalefactors.GetName()}_{name}"
+        logger.debug(f"Looking for systematic shapes: {sf_base}")
+        sysup, sysdn = file.Get(f"{sf_base}_Up"), file.Get(f"{sf_base}_Down")
         try:
             sysup.GetName()
             sysdn.GetName()
         except ReferenceError:
-            print ("Missing one of ", sfup, sfdn, " in ", file.GetName())
-            print ("Following is in directory ")
+            logger.info(f"Missing {sf_base} up or down in {file.GetName()}")
+            logger.info("Following is in directory ")
             file.ls()
             sys.exit()
         # Now we loop through each bin and construct a polynomial function per bin
         for b in range(self.nbins):
             # Name of the function depends on naming scheme
+            fname = f"sys_function_{name}_cat_{self.catid}_ch_{self.chid}"
             if self.convention == "BU":
-                fname = "sys_function_%s_cat_%s_ch_%s_bin_%d" % (
-                    name, self.catid, self.chid, b)
+                fname = f"{fname}_bin_{b}"
             else:
-                fname = "sys_function_%s_cat_%s_ch_%s_bin%d" % (
-                    name, self.catid, self.chid, b+1)
-            if functype=="quadratic":
-                if self.scalefactors.GetBinContent(b+1) == 0:
+                fname = f"{fname}_bin{b + 1}"
+            if functype == "quadratic":
+                if self.scalefactors.GetBinContent(b + 1) == 0:
                     nsf = 0
                     vu = 0
                     vd = 0
                 else:
-                    nsf = 1./(self.scalefactors.GetBinContent(b+1))
-                    vu = 1./(sysup.GetBinContent(b+1)) - nsf
+                    nsf = 1.0 / (self.scalefactors.GetBinContent(b + 1))
+                    vu = 1.0 / (sysup.GetBinContent(b + 1)) - nsf
 
-                    if sysdn.GetBinContent(b+1) == 0:
+                    if sysdn.GetBinContent(b + 1) == 0:
                         vd = 0
                     else:
                         # Note this should be <ve if down is lower, its not a bug
-                        vd = 1./(sysdn.GetBinContent(b+1)) - nsf
-                coeff_a = 0.5*(vu+vd)
-                coeff_b = 0.5*(vu-vd)
+                        vd = 1.0 / (sysdn.GetBinContent(b + 1)) - nsf
+                coeff_a = 0.5 * (vu + vd)
+                coeff_b = 0.5 * (vu - vd)
 
-                func = r.RooFormulaVar(
-                    fname,
-                    "Systematic Varation",
-                    "(%f*@0*@0+%f*@0)/%f" % (coeff_a, coeff_b, nsf),
-                    r.RooArgList(
-                        self.wspace_out.var("%s" % name))
-                )  # this is now relative deviation, SF-SF_0 = func => SF = SF_0*(1+func/SF_0)
+                # this is now relative deviation, SF-SF_0 = func => SF = SF_0*(1+func/SF_0)
+                func = ROOT.RooFormulaVar(fname, "Systematic Variation", f"({coeff_a}*@0*@0+{coeff_b}*@0)/{nsf}", ROOT.RooArgList(self.wspace_out.var(name)))
 
-                if (coeff_a==0 and coeff_b==0):
+                if coeff_a == 0 and coeff_b == 0:
                     func.setAttribute("temp", True)
-            elif functype=="lognorm":
-                n0 = self.scalefactors.GetBinContent(b+1)
+            elif functype == "lognorm":
+                n0 = self.scalefactors.GetBinContent(b + 1)
                 if n0 == 0:
                     sigma = 0
                     direction = 1
                 else:
-                    sfmax = max(0, sysup.GetBinContent(b+1))
-                    sfmin = max(0, sysdn.GetBinContent(b+1))
-                    sigma = 0.5 * abs(sfmax-sfmin)
+                    sfmax = max(0, sysup.GetBinContent(b + 1))
+                    sfmin = max(0, sysdn.GetBinContent(b + 1))
+                    sigma = 0.5 * abs(sfmax - sfmin)
 
                     direction = 1 if sfmax > sfmin else -1
-                
-                
-                func = r.RooFormulaVar(
+
+                func = ROOT.RooFormulaVar(
                     fname,
                     "Systematic Variation",
-                    "({N} * (1+{SIGMA}/{N})**({DIRECTION}*@0) - {N}) / {N}".format(N=n0, SIGMA=sigma,DIRECTION=direction),
-                    r.RooArgList(self.wspace_out.var("%s" % name))
+                    f"({n0} * (1+{sigma}/{n0})**({direction}*@0) - {n0}) / {n0}",
+                    ROOT.RooArgList(self.wspace_out.var(name)),
                 )
                 if sigma == 0:
                     func.setAttribute("temp", True)
-            self.wspace_out.var("%s" % name).setVal(0)
+            self.wspace_out.var(name).setVal(0)
             if not self.wspace_out.function(func.GetName()):
-                self.wspace_out._import(func)
+                safe_import(workspace=self.wspace_out, obj=func)
         if setv != "":
             if "SetTo" in setv:
                 vv = float(setv.split("=")[1])
-                self.wspace_out.var("nuis_IN_%s" % name).setVal(vv)
-                self.wspace_out.var("%s" % name).setVal(vv)
+                self.wspace_out.var(f"nuis_IN_{name}").setVal(vv)
+                self.wspace_out.var(name).setVal(vv)
             else:
-                print ("DIRECTIVE %s IN SYSTEMATIC %s, NOT UNDERSTOOD!" % (
-                    setv, name))
+                print(f"DIRECTIVE {setv} IN SYSTEMATIC {name}, NOT UNDERSTOOD!")
                 sys.exit()
         self.nuisances.append(name)
 
     def set_wspace(self, w):
         self.wspace = w
         self.wspace._safe_import = SafeWorkspaceImporter(self.wspace)
-        #self.wspace._import = getattr(self.wspace,"import") # workaround: import is a python keyword
 
     def ret_bkg_nuisances(self):
         return self.bkg_nuisances
@@ -519,16 +487,16 @@ class Channel:
         return self.chid
 
     def ret_sfactor(self, i, syst="", direction=1):
-        if self.scalefactors.GetBinContent(i+1) == 0:
+        if self.scalefactors.GetBinContent(i + 1) == 0:
             return 0
         if syst and syst in self.systematics.keys():
             if direction > 0:
                 index = 0
             else:
                 index = 1
-            return 1./(self.systematics[syst][index].GetBinContent(i+1))
+            return 1.0 / (self.systematics[syst][index].GetBinContent(i + 1))
         else:
-            return 1./(self.scalefactors.GetBinContent(i+1))
+            return 1.0 / (self.scalefactors.GetBinContent(i + 1))
 
     def ret_background(self):
         return self.backgroundname
@@ -541,22 +509,26 @@ class Category:
     # This class holds a "category" which contains a bunch of channels
     # It needs to hold a combined_pdf object, a combined_dataset object and
     # the target dataset for this channel
-    def __init__(self, corrname, catid, cname 		# name for the parametric variation templates
-                 , _fin 		# TDirectory
-                 , _fout 		# and output file
-                 , _wspace 		# RooWorkspace (in)
-                 , _wspace_out 	# RooWorkspace (out)
-                 , _bins  		# just get the bins
-                 , _varname	    	# name of the variale
-                 , _target_datasetname  # only for initial fit values
-                 , _control_regions 	# CRs constructed
-                 , diag		# a diagonalizer object
-                 , convention="BU"  # Naming convention to use: either BU or IC
-                 ):
+    def __init__(
+        self,
+        corrname,
+        catid,
+        cname,  # name for the parametric variation templates
+        _fin,  # TDirectory
+        _fout,  # and output file
+        _wspace,  # RooWorkspace (in)
+        _wspace_out,  # RooWorkspace (out)
+        _bins,  # just get the bins
+        _varname,  # name of the variale
+        _target_datasetname,  # only for initial fit values
+        _control_regions,  # CRs constructed
+        diag,  # a diagonalizer object
+        convention="BU",  # Naming convention to use: either BU or IC
+    ):
         self.GNAME = corrname
         self.cname = cname
         self.category = catid
-        self.catid = catid+'_'+corrname
+        self.catid = catid + "_" + corrname
         # A crappy way to store canvases to be saved in the end
         self.canvases = {}
         self.histograms = []
@@ -570,7 +542,7 @@ class Category:
         self._wspace_out._safe_import = SafeWorkspaceImporter(self._wspace_out)
         self._wspace._safe_import = SafeWorkspaceImporter(self._wspace)
 
-        #self.diag = diag
+        # self.diag = diag
         self.additional_vars = {}
         self.additional_targets = []
 
@@ -582,24 +554,18 @@ class Category:
         self._varname = _varname
         self._bins = _bins[:]
         self._control_regions = _control_regions
-        #self._data_mc  = _wspace.data(_target_datasetname)
+        # self._data_mc  = _wspace.data(_target_datasetname)
         self._target_datasetname = _target_datasetname
         self.sample = self._wspace_out.cat("bin_number")
         self._obsvar = self._wspace_out.var("observed")
-        #self._obsdata = self._wspace_out.data("combinedData")
+        # self._obsdata = self._wspace_out.data("combinedData")
         if self._wspace_out.var(self._var.GetName()):
             a = 1
 
         else:
-            self._wspace_out._import(
-                self._var, r.RooFit.RecycleConflictNodes())
+            safe_import(workspace=self._wspace_out, obj=self._var)
         self._var = self._wspace_out.var(self._var.GetName())
         self.isSecondDependant = False
-        # for j,cr in enumerate(self._control_regions):
-        # for i,bl in enumerate(self._bins):
-        #  if i >= len(self._bins)-1 : continue
-        #  self.sample.defineType("cat_%s_ch_%s_bin_%d"%(self.catid,j,i),10*MAXBINS*catid+MAXBINS*j+i)
-        #  self.sample.setIndex(10*MAXBINS*catid+MAXBINS*j+i)
 
         self.convention = convention
 
@@ -628,9 +594,8 @@ class Category:
             if ch.chid == cr.chid:
                 bc += 1
                 prefitValue = ch.initE_precorr if regen else ch.initE - ch.initB
-                expected_hist.SetBinContent(
-                    bc, (ch.ret_expected()-ch.ret_background())/(prefitValue))
-                expected_hist.SetBinError(bc, ch.ret_err()/(ch.initE-ch.initB))
+                expected_hist.SetBinContent(bc, (ch.ret_expected() - ch.ret_background()) / (prefitValue))
+                expected_hist.SetBinError(bc, ch.ret_err() / (ch.initE - ch.initB))
 
     def fillObservedHist(self, cr, observed_hist):
         bc = 0
@@ -638,7 +603,7 @@ class Category:
             if ch.chid == cr.chid:
                 bc += 1
                 observed_hist.SetBinContent(bc, ch.ret_observed())
-                observed_hist.SetBinError(bc, (ch.ret_observed())**0.5)
+                observed_hist.SetBinError(bc, (ch.ret_observed()) ** 0.5)
 
     def fillBackgroundHist(self, cr, background_hist):
         bc = 0
@@ -649,103 +614,118 @@ class Category:
 
     def fillModelHist(self, model_hist):
         for i, ch in enumerate(self.channels):
-            if i >= len(self._bins)-1:
+            if i >= len(self._bins) - 1:
                 break
-            model_hist.SetBinContent(i+1, ch.ret_model())
+            model_hist.SetBinContent(i + 1, ch.ret_model())
 
     def makeWeightHists(self, cr_i=-1, regen=False):
-        hist = r.TH1F("control_Region_weights", "Expected Post-fit/Pre-fit",
-                      len(self._bins)-1, array.array('d', self._bins))
+        hist = ROOT.TH1F("control_Region_weights", "Expected Post-fit/Pre-fit", len(self._bins) - 1, array.array("d", self._bins))
         if cr_i == -1:
             for i, ch in enumerate(self.channels):
-                if i >= len(self._bins)-1:
+                if i >= len(self._bins) - 1:
                     break
-                hist.SetBinContent(i+1, ch.ret_correction())
-                hist.SetBinError(i+1, ch.ret_correction_err())
+                hist.SetBinContent(i + 1, ch.ret_correction())
+                hist.SetBinError(i + 1, ch.ret_correction_err())
         elif cr_i == -2:  # no correction
             for i, ch in enumerate(self.channels):
-                if i >= len(self._bins)-1:
+                if i >= len(self._bins) - 1:
                     break
-                hist.SetBinContent(i+1, 1)
-                hist.SetBinError(i+1, 0)
+                hist.SetBinContent(i + 1, 1)
+                hist.SetBinError(i + 1, 0)
         else:
             self.fillExpectedCorr(self._control_regions[cr_i], hist, regen)
 
         return hist.Clone()
 
     def init_channels(self):
-        #print "self._wspace_out.Print(V)", self._wspace_out.Print("V")
-        # r.RooCategory("bin_number","bin_number")
+        # print "self._wspace_out.Print(V)", self._wspace_out.Print("V")
+        # ROOT.RooCategory("bin_number","bin_number")
         sample = self._wspace_out.cat("bin_number")
-        #print "zeynep sample", sample, self._wspace_out.cat("bin_number")
+        # print "zeynep sample", sample, self._wspace_out.cat("bin_number")
 
-        # for j,cr in enumerate(self._control_regions):
+        # This loops for every process in the model and builds `Bin` objects.
+        # Each of the `Bin` builds the modeled number of events for that process
+        # in that given bin as a function of the nuissances affecting that process
+        # and transfer factors to express it as a function of QCD Znunu in the SR
         for j, cr in enumerate(self._control_regions):
             for i, bl in enumerate(self._bins):
-                if i >= len(self._bins)-1:
+
+                # Fetch the edges of the bin
+                if i >= len(self._bins) - 1:
                     continue
-                xmin, xmax = bl, self._bins[i+1]
-                if i == len(self._bins)-2:
-                    xmax = 999999.
-                ch = Bin(
-                    self.category,
-                    self.catid,
-                    cr.chid,
-                    i,
-                    self._var,
-                    "",
-                    self._wspace,
-                    self._wspace_out,
-                    xmin,
-                    xmax,
-                    convention=self.convention)
+                xmin, xmax = bl, self._bins[i + 1]
+                if i == len(self._bins) - 2:
+                    xmax = 999999.0
+
+                # Initialize the bin, with IDs to link it to the process and model,
+                ch = Bin(self.category, self.catid, cr.chid, i, self._var, "", self._wspace, self._wspace_out, xmin, xmax, convention=self.convention)
+                # link the process
                 ch.set_control_region(cr)
+
+                # This is unused
                 if cr.has_background():
                     ch.add_background(cr.ret_background())
-                ch.set_label(sample)  # should import the sample category label
-                ch.set_initY(self._target_datasetname)
-                ch.set_sfactor(cr.ret_sfactor(i))
-                # This has to the the last thing
-                # Note, we can have an expected value which is itself a RooFormulaVar
 
+                ch.set_label(sample)  # should import the sample category label
+
+                # set the "initial yield" to the number of events of the process of that category for that given bin.
+                # This is only usefull for process in the `qcd_zjets` model,
+                # where initY is set to the yield of QCD Znunu in the SR
+                ch.set_initY(self._target_datasetname)
+
+                # Set the "scale factor" for this given bin (rather a transfer factor),
+                # the ratio between the yield of the process of the "control region" and
+                # the process of the "category" (e.g. in the `ewk_zjets` model, it would be process / EWK Znunu in SR)
+                ch.set_sfactor(cr.ret_sfactor(i))
+
+                # Compute the expected number of events as a function of QCD Znunu in the SR.
+                # This is done as a product of transfer factors such that
+                # every process is only parametrized by the QCD Znunu yield (and nuisances)
+                #
+                # for the "non dependant" case (only `qcd_zjets`), the QCD Znunu in the SR and a single transfer factors are used
+                # otherwise, for the "dependant" case, the expression passed to `setup_expect_var` is used
+                # to fetch the transfer factors and nuisances from the category it depends on, which is then multiplied
+                # to another transfer factor and set of nuisances.
                 if self.isSecondDependant:
-                    ch.setup_expect_var("cat_%s_%s_ch_%s" % (
-                        self.category, self.BASE, self.CONTROL))
+                    ch.setup_expect_var(f"cat_{self.category}_{self.BASE}_ch_{self.CONTROL}")
                 else:
                     ch.setup_expect_var()
 
+                # (Not usefull for the fit)
                 # initialise expected  (but this will be somewhat a "post" state), i.e after fiddling with the nuisance parameters.
                 ch.set_initE()
                 ch.add_to_dataset()
                 self.channels.append(ch)
         # fit is buggered so need to scale by 1.1
 
+        # Save the prefit histograms (these are not used by the combine fit)
         for j, cr in enumerate(self._control_regions):
             # save the prefit histos
-            cr_pre_hist = r.TH1F("control_region_%s" % cr.ret_name(
-            ), "Expected %s control region" % cr.ret_name(), len(self._bins)-1, array.array('d', self._bins))
+            cr_pre_hist = ROOT.TH1F(
+                f"control_region_{cr.ret_name()}", f"Expected {cr.ret_name()} control region", len(self._bins) - 1, array.array("d", self._bins)
+            )
             self.fillExpectedHist(cr, cr_pre_hist)
             cr_pre_hist.SetLineWidth(2)
-            cr_pre_hist.SetLineColor(r.kRed)
+            cr_pre_hist.SetLineColor(ROOT.kRed)
             self.all_hists.append(cr_pre_hist.Clone())
             self.cr_prefit_hists.append(cr_pre_hist.Clone())
 
+        # Purpose of this is unclear
+        # Maybe to check everything is computed correctly in all bins of all processes?
         for i, bl in enumerate(self.channels):
-            if i >= len(self._bins)-1:
+            if i >= len(self._bins) - 1:
                 break
-            model_mu = self._wspace_out.var(
-                naming_convention(bl.id, bl.catid, self.convention))
+            model_mu = self._wspace_out.var(naming_convention(bl.id, bl.catid, self.convention))
             # self._wspace_out.var(model_mu.GetName()).setVal(1.2*model_mu.getVal())
 
     def ret_control_regions(self):
         return self._control_regions
 
-    def ret_channels(self):
-        return self.channels
-
     def generate_systematic_templates(self, diag, npars):
         if self.model_hist == 0:
-            sys.exit("Error in generate_systematic_templates: cannot generate template variations before nominal model is created, first run Category.save_model() !!!! ")
+            sys.exit(
+                "Error in generate_systematic_templates: cannot generate template variations before nominal model is created, first run Category.save_model() !!!! "
+            )
 
         # First store nominal values in control regions (to make error bands)
         nominals = []
@@ -759,13 +739,13 @@ class Category:
 
         # The parameters have changed so re-generate the templates
         # We also re-calculate the expectations in each CR to update the errors for the plotting
-        leg_var = r.TLegend(0.56, 0.1, 0.89, 0.91)
+        leg_var = ROOT.TLegend(0.56, 0.1, 0.89, 0.91)
         leg_var.SetFillColor(0)
         leg_var.SetTextFont(42)
 
         # We will make a plot along the way
-        canvr = r.TCanvas("canv_variations_ratio")
-        canv = r.TCanvas("canv_variations")
+        canvr = ROOT.TCanvas("canv_variations_ratio")
+        canv = ROOT.TCanvas("canv_variations")
         model_hist_spectrum = getNormalizedHist(self.model_hist)
         model_hist_spectrum.SetTitle("")
         model_hist_spectrum.GetXaxis().SetTitle("E_{T}^{miss} (GeV)")
@@ -776,16 +756,23 @@ class Category:
         systrats = []
 
         for par in range(npars):
-            hist_up = r.TH1F("%s_combined_model_par_%d_Up" % (self.GNAME, par), "combined_model par %d Up 1 sigma - %s " %
-                             (par, self.cname), len(self._bins)-1, array.array('d', self._bins))
-            hist_dn = r.TH1F("%s_combined_model_par_%d_Down" % (self.GNAME, par), "combined_model par %d Down 1 sigma - %s" %
-                             (par, self.cname), len(self._bins)-1, array.array('d', self._bins))
+            hist_up = ROOT.TH1F(
+                f"{self.GNAME}_combined_model_par_{par}_Up",
+                f"combined_model par {par} Up 1 sigma - {self.cname}",
+                len(self._bins) - 1,
+                array.array("d", self._bins),
+            )
+            hist_dn = ROOT.TH1F(
+                f"{self.GNAME}_combined_model_par_{par}_Down",
+                f"combined_model par {par} Down 1 sigma - {self.cname}",
+                len(self._bins) - 1,
+                array.array("d", self._bins),
+            )
 
             diag.setEigenset(par, 1)  # up variation
             # fillModelHist(hist_up,channels)
             histW = self.makeWeightHists()
-            diag.generateWeightedTemplate(
-                hist_up, histW, self._varname, self._varname, self._wspace.data(self._target_datasetname))
+            diag.generateWeightedTemplate(hist_up, histW, self._varname, self._varname, self._wspace.data(self._target_datasetname))
 
             # Also want to calculate for each control region an error per bin associated, its very easy to do, but only do it for "Up" variation and the error will symmetrize itself
             for j, cr in enumerate(self._control_regions):
@@ -793,23 +780,21 @@ class Category:
                 for i, ch in enumerate(self.channels):
                     if ch.chid != cr.chid:
                         continue
-                    derr = abs(ch.ret_expected()-nominals[j][chi])
+                    derr = abs(ch.ret_expected() - nominals[j][chi])
                     ch.add_err(derr)
                     chi += 1
 
             # also add in signalregion the errors
             for i, ch in enumerate(self.channels):
-                derr = abs(hist_up.GetBinContent(i+1) -
-                           self.model_hist.GetBinContent(i+1))
+                derr = abs(hist_up.GetBinContent(i + 1) - self.model_hist.GetBinContent(i + 1))
                 ch.add_model_err(derr)
-                if i > len(self._bins)-1:
+                if i > len(self._bins) - 1:
                     break
 
             diag.setEigenset(par, -1)  # up variation
             # fillModelHist(hist_dn,channels)
             histW = self.makeWeightHists()
-            diag.generateWeightedTemplate(
-                hist_dn, histW, self._varname, self._varname, self._wspace.data(self._target_datasetname))
+            diag.generateWeightedTemplate(hist_dn, histW, self._varname, self._varname, self._wspace.data(self._target_datasetname))
 
             # Reset parameter values
             diag.resetPars()
@@ -818,10 +803,10 @@ class Category:
             canv.cd()
             hist_up.SetLineWidth(2)
             hist_dn.SetLineWidth(2)
-            if sys_c+2 == 10:
+            if sys_c + 2 == 10:
                 sys_c += 1
-            hist_up.SetLineColor(sys_c+2)
-            hist_dn.SetLineColor(sys_c+2)
+            hist_up.SetLineColor(sys_c + 2)
+            hist_dn.SetLineColor(sys_c + 2)
             hist_dn.SetLineStyle(2)
 
             # _fout.WriteTObject(hist_up)
@@ -839,9 +824,9 @@ class Category:
 
             flat = self.model_hist.Clone()
             hist_up_cl = hist_up.Clone()
-            hist_up_cl.SetName(hist_up_cl.GetName()+"_ratio")
+            hist_up_cl.SetName(hist_up_cl.GetName() + "_ratio")
             hist_dn_cl = hist_dn.Clone()
-            hist_dn_cl.SetName(hist_dn_cl.GetName()+"_ratio")
+            hist_dn_cl.SetName(hist_dn_cl.GetName() + "_ratio")
             hist_up_cl.Divide(model_hist_spectrum)
             hist_dn_cl.Divide(model_hist_spectrum)
             flat.Divide(self.model_hist)
@@ -860,25 +845,23 @@ class Category:
             systrats.append(hist_dn_cl.Clone())
             # hist_up_cl.Draw('histsame')
             # hist_dn_cl.Draw('histsame')
-            leg_var.AddEntry(hist_up_cl, "Parameter %d" % par, "L")
+            leg_var.AddEntry(hist_up_cl, f"Parameter {par}", "L")
             sys_c += 1
 
         # find maximum
         maxdiff = 0
         for syst in systrats:
-            max_local = max([syst.GetBinContent(b+1)
-                             for b in range(syst.GetNbinsX())])
-            #print max_local, maxdiff, syst.GetName()
+            max_local = max([syst.GetBinContent(b + 1) for b in range(syst.GetNbinsX())])
+            # print max_local, maxdiff, syst.GetName()
             if max_local > maxdiff:
                 maxdiff = max_local
-        print ("MaxDiff = ", maxdiff)
+        print("MaxDiff = ", maxdiff)
         maxdiff -= 1
         canvr.cd()
-        dHist = r.TH1F(
-            "dummy", ";E_{T}^{miss};Variation/Nominal", 1, self._bins[0], self._bins[-1])
+        dHist = ROOT.TH1F("dummy", ";E_{T}^{miss};Variation/Nominal", 1, self._bins[0], self._bins[-1])
         dHist.SetBinContent(1, 1)
-        dHist.SetMaximum(1+1.1*maxdiff)
-        dHist.SetMinimum(1-1.1*maxdiff)
+        dHist.SetMaximum(1 + 1.1 * maxdiff)
+        dHist.SetMinimum(1 - 1.1 * maxdiff)
         dHist.Draw("AXIS")
         for isy, syst in enumerate(systrats):
             syst.Draw("histsame")
@@ -892,41 +875,34 @@ class Category:
 
     def save_model(self, diag):
         # Need to make ratio
-        self.model_hist = r.TH1F("%s_combined_model" % (
-            self.cname), "combined_model - %s" % (self.cname), len(self._bins)-1, array.array('d', self._bins))
+        self.model_hist = ROOT.TH1F(f"{self.cname}_combined_model", f"combined_model - {self.cname}", len(self._bins) - 1, array.array("d", self._bins))
         # fillModelHist(model_hist,channels)
 
         histW = self.makeWeightHists()
-        diag.generateWeightedTemplate(
-            self.model_hist, histW, self._varname, self._varname, self._wspace.data(self._target_datasetname))
+        diag.generateWeightedTemplate(self.model_hist, histW, self._varname, self._varname, self._wspace.data(self._target_datasetname))
         self.model_hist.SetLineWidth(2)
         self.model_hist.SetLineColor(1)
 
-        #_fout = r.TFile("combined_model.root","RECREATE")
+        # _fout = ROOT.TFile("combined_model.root","RECREATE")
         # _fout.WriteTObject(self.model_hist)
-        self.model_hist.SetName("%s_combined_model" % self.GNAME)
-        histW.SetName("%s_correction_weights_%s" % (self.GNAME, self.cname))
+        self.model_hist.SetName(f"{self.GNAME}_combined_model")
+        histW.SetName(f"{self.GNAME}_correction_weights_{self.cname}")
         histW.SetLineWidth(2)
         histW.SetLineColor(4)
         self.histograms.append(histW)
 
     def save_all_models_internal(self, diag):
-
         # First we make errors for the nominal model histogram
-        error_hist_F = r.TH1F("%s_combined_model_ERRORS" % (
-            self.cname), "combined_model - %s" % (self.cname), len(self._bins)-1, array.array('d', self._bins))
+        error_hist_F = ROOT.TH1F(f"{self.cname}_combined_model_ERRORS", f"combined_model - {self.cname}", len(self._bins) - 1, array.array("d", self._bins))
         histW = self.makeWeightHists()
         histW_U = self.makeWeightHists()
         for b in range(histW_U.GetNbinsX()):
             # now its ~the default correction +1 sigma
-            histW_U.SetBinContent(
-                b+1, histW_U.GetBinContent(b+1)+histW_U.GetBinError(b+1))
-        diag.generateWeightedTemplate(
-            error_hist_F, histW_U, self._varname, self._varname, self._wspace.data(self._target_datasetname))
+            histW_U.SetBinContent(b + 1, histW_U.GetBinContent(b + 1) + histW_U.GetBinError(b + 1))
+        diag.generateWeightedTemplate(error_hist_F, histW_U, self._varname, self._varname, self._wspace.data(self._target_datasetname))
         for b in range(error_hist_F.GetNbinsX()):
-            sterr = error_hist_F.GetBinError(b+1)
-            self.model_hist.SetBinError(
-                b+1, (sterr**2+(abs(error_hist_F.GetBinContent(b+1)-self.model_hist.GetBinContent(b+1)))**2)**0.5)
+            sterr = error_hist_F.GetBinError(b + 1)
+            self.model_hist.SetBinError(b + 1, (sterr**2 + (abs(error_hist_F.GetBinContent(b + 1) - self.model_hist.GetBinContent(b + 1))) ** 2) ** 0.5)
 
         # First, I think we want to pull in all of the "pre-fit" targets and make
         # them as the denominator, not necessary for the signal region
@@ -936,27 +912,22 @@ class Category:
             cr_i = tg_v[1]
             histW = self.makeWeightHists(cr_i, True)
             histW_U = self.makeWeightHists(cr_i, True)
-            histW.SetName("%s_%s_combined_model_WEIGHTS_CR_FORTARGET" %
-                          (self.GNAME, tg))
+            histW.SetName(f"{self.GNAME}_{tg}_combined_model_WEIGHTS_CR_FORTARGET")
             self.histograms.append(histW.Clone())
             for b in range(histW_U.GetNbinsX()):
                 # now its ~the default correction +1 sigma
-                histW_U.SetBinContent(
-                    b+1, histW_U.GetBinContent(b+1)+histW_U.GetBinError(b+1))
-            model_tg = r.TH1F("%s_%s_combined_model" % (self.GNAME, tg), "combined_model - %s" %
-                              (self.cname), len(self._bins)-1, array.array('d', self._bins))
-            diag.generateWeightedTemplate(
-                model_tg, histW, self._varname, self._varname, self._wspace.data(tg))
-            model_tg_errs = r.TH1F("%s_%s_combined_model_ERRORS" % (
-                self.GNAME, tg), "combined_model - %s" % (self.cname), len(self._bins)-1, array.array('d', self._bins))
-            diag.generateWeightedTemplate(
-                model_tg_errs, histW_U, self._varname, self._varname, self._wspace.data(tg))
+                histW_U.SetBinContent(b + 1, histW_U.GetBinContent(b + 1) + histW_U.GetBinError(b + 1))
+            model_tg = ROOT.TH1F(f"{self.GNAME}_{tg}_combined_model", f"combined_model - {self.cname}", len(self._bins) - 1, array.array("d", self._bins))
+            diag.generateWeightedTemplate(model_tg, histW, self._varname, self._varname, self._wspace.data(tg))
+            model_tg_errs = ROOT.TH1F(
+                f"{self.GNAME}_{tg}_combined_model_ERRORS", f"combined_model - {self.cname}", len(self._bins) - 1, array.array("d", self._bins)
+            )
+            diag.generateWeightedTemplate(model_tg_errs, histW_U, self._varname, self._varname, self._wspace.data(tg))
             # Errors are set as
             for b in range(model_tg_errs.GetNbinsX()):
                 # add statisticsl part
-                sterr = model_tg.GetBinError(b+1)
-                model_tg.SetBinError(
-                    b+1, (sterr**2+(abs(model_tg_errs.GetBinContent(b+1)-model_tg.GetBinContent(b+1)))**2)**0.5)
+                sterr = model_tg.GetBinError(b + 1)
+                model_tg.SetBinError(b + 1, (sterr**2 + (abs(model_tg_errs.GetBinContent(b + 1) - model_tg.GetBinContent(b + 1))) ** 2) ** 0.5)
             self.histograms.append(model_tg.Clone())
 
         # Also make a weighted version of each other variable
@@ -965,23 +936,17 @@ class Category:
             histW_U = self.makeWeightHists()
             for b in range(histW_U.GetNbinsX()):
                 # now its ~the default correction +1 sigma
-                histW_U.SetBinContent(
-                    b+1, histW_U.GetBinContent(b+1)+histW_U.GetBinError(b+1))
+                histW_U.SetBinContent(b + 1, histW_U.GetBinContent(b + 1) + histW_U.GetBinError(b + 1))
             nb = self.additional_vars[varx][0]
             min = self.additional_vars[varx][1]
             max = self.additional_vars[varx][2]
-            model_hist_vx = r.TH1F("%s_combined_model%s" % (
-                self.GNAME, varx), "combined_model - %s" % (self.cname), nb, min, max)
-            model_hist_vx_errs = r.TH1F("%s_combined_model%s_ERRORS" % (
-                self.GNAME, varx), "combined_model - %s" % (self.cname), nb, min, max)
-            diag.generateWeightedTemplate(
-                model_hist_vx, histW, self._varname, varx, self._wspace.data(self._target_datasetname))
-            diag.generateWeightedTemplate(
-                model_hist_vx_errs, histW_U, self._varname, varx, self._wspace.data(self._target_datasetname))
+            model_hist_vx = ROOT.TH1F(f"{self.GNAME}_combined_model{varx}", f"combined_model - {self.cname}", nb, min, max)
+            model_hist_vx_errs = ROOT.TH1F(f"{self.GNAME}_combined_model{varx}_ERRORS", f"combined_model - {self.cname}", nb, min, max)
+            diag.generateWeightedTemplate(model_hist_vx, histW, self._varname, varx, self._wspace.data(self._target_datasetname))
+            diag.generateWeightedTemplate(model_hist_vx_errs, histW_U, self._varname, varx, self._wspace.data(self._target_datasetname))
             for b in range(model_hist_vx_errs.GetNbinsX()):
-                sterr = model_hist_vx.GetBinError(b+1)
-                model_hist_vx.SetBinError(
-                    b+1, (sterr**2+(abs(model_hist_vx_errs.GetBinContent(b+1)-model_hist_vx.GetBinContent(b+1)))**2)**0.5)
+                sterr = model_hist_vx.GetBinError(b + 1)
+                model_hist_vx.SetBinError(b + 1, (sterr**2 + (abs(model_hist_vx_errs.GetBinContent(b + 1) - model_hist_vx.GetBinContent(b + 1))) ** 2) ** 0.5)
             self.histograms.append(model_hist_vx.Clone())
 
             for tg_v in self.additional_targets:
@@ -991,34 +956,27 @@ class Category:
                 histW_U = self.makeWeightHists(cr_i, True)
                 for b in range(histW_U.GetNbinsX()):
                     # now its ~the default correction +1 sigma
-                    histW_U.SetBinContent(
-                        b+1, histW_U.GetBinContent(b+1)+histW_U.GetBinError(b+1))
-                model_hist_vx_tg = r.TH1F("%s_%s_combined_model%s" % (
-                    self.GNAME, tg, varx), "combined_model - %s" % (self.cname), nb, min, max)
-                model_hist_vx_tg_errs = r.TH1F("%s_%s_combined_model_ERRORS%s" % (
-                    self.GNAME, tg, varx), "combined_model - %s" % (self.cname), nb, min, max)
-                diag.generateWeightedTemplate(
-                    model_hist_vx_tg, histW, self._varname, varx, self._wspace.data(tg))
-                diag.generateWeightedTemplate(
-                    model_hist_vx_tg_errs, histW_U, self._varname, varx, self._wspace.data(tg))
+                    histW_U.SetBinContent(b + 1, histW_U.GetBinContent(b + 1) + histW_U.GetBinError(b + 1))
+                model_hist_vx_tg = ROOT.TH1F(f"{self.GNAME}_{tg}_combined_model{varx}", f"combined_model - {self.cname}", nb, min, max)
+                model_hist_vx_tg_errs = ROOT.TH1F(f"{self.GNAME}_{tg}_combined_model_ERRORS{varx}", f"combined_model - {self.cname}", nb, min, max)
+                diag.generateWeightedTemplate(model_hist_vx_tg, histW, self._varname, varx, self._wspace.data(tg))
+                diag.generateWeightedTemplate(model_hist_vx_tg_errs, histW_U, self._varname, varx, self._wspace.data(tg))
                 for b in range(model_hist_vx_tg_errs.GetNbinsX()):
-                    sterr = model_hist_vx_tg.GetBinError(b+1)
+                    sterr = model_hist_vx_tg.GetBinError(b + 1)
                     model_hist_vx_tg.SetBinError(
-                        b+1, (sterr**2+(abs(model_hist_vx_tg_errs.GetBinContent(b+1)-model_hist_vx_tg.GetBinContent(b+1)))**2)**0.5)
+                        b + 1, (sterr**2 + (abs(model_hist_vx_tg_errs.GetBinContent(b + 1) - model_hist_vx_tg.GetBinContent(b + 1))) ** 2) ** 0.5
+                    )
                 self.histograms.append(model_hist_vx_tg.Clone())
 
     def make_post_fit_plots(self):
-        c = r.TCanvas("%sregion_mc_fit_before_after" %
-                      self._target_datasetname)
-        hist_original = r.TH1F("%s_OriginalZvv" % (self.cname), "", len(
-            self._bins)-1, array.array('d', self._bins))
-        hist_post = r.TH1F("%s_NewZvv" % (self.cname), "", len(
-            self._bins)-1, array.array('d', self._bins))
+        c = ROOT.TCanvas(f"{self._target_datasetname}region_mc_fit_before_after")
+        hist_original = ROOT.TH1F(f"{self.cname}_OriginalZvv", "", len(self._bins) - 1, array.array("d", self._bins))
+        hist_post = ROOT.TH1F(f"{self.cname}_NewZvv", "", len(self._bins) - 1, array.array("d", self._bins))
         for i, ch in enumerate(self.channels):
-            if i >= len(self._bins)-1:
+            if i >= len(self._bins) - 1:
                 break
-            hist_original.SetBinContent(i+1, ch.ret_initY())
-            hist_post.SetBinContent(i+1, ch.ret_model())
+            hist_original.SetBinContent(i + 1, ch.ret_initY())
+            hist_post.SetBinContent(i + 1, ch.ret_model())
         hist_original.GetXaxis().SetTitle("fake MET (GeV)")
         hist_original.GetXaxis().SetTitle("Events/GeV")
         hist_original.SetLineWidth(2)
@@ -1031,33 +989,45 @@ class Category:
         hist_post.Draw("histsame")
         self._fout.WriteTObject(c)
 
-        lat = r.TLatex()
+        lat = ROOT.TLatex()
         lat.SetNDC()
         lat.SetTextSize(0.04)
         lat.SetTextFont(42)
 
         # now build post fit plots in each control region with some indication of systematic variations from fit?
         for j, cr in enumerate(self._control_regions):
-            c = r.TCanvas("c_%s" % cr.ret_name(), "", 800, 800)
-            cr_hist = r.TH1F("%s_control_region_%s" % (self.cname, cr.ret_name(
-            )), "Expected %s control region" % cr.ret_name(), len(self._bins)-1, array.array('d', self._bins))
-            da_hist = r.TH1F("%s_data_control_region_%s" % (self.cname, cr.ret_name(
-            )), "data %s control region" % cr.ret_name(), len(self._bins)-1, array.array('d', self._bins))
-            mc_hist = r.TH1F("%s_mc_control_region_%s" % (self.cname, cr.ret_name(
-            )), "Background %s control region" % cr.ret_name(), len(self._bins)-1, array.array('d', self._bins))
+            c = ROOT.TCanvas(f"c_{cr.ret_name()}", "", 800, 800)
+            cr_hist = ROOT.TH1F(
+                f"{self.cname}_control_region_{cr.ret_name()}",
+                f"Expected {cr.ret_name()} control region",
+                len(self._bins) - 1,
+                array.array("d", self._bins),
+            )
+            da_hist = ROOT.TH1F(
+                f"{self.cname}_data_control_region_{cr.ret_name()}",
+                f"data {cr.ret_name()} control region",
+                len(self._bins) - 1,
+                array.array("d", self._bins),
+            )
+            mc_hist = ROOT.TH1F(
+                f"{self.cname}_mc_control_region_{cr.ret_name()}",
+                f"Background {cr.ret_name()} control region",
+                len(self._bins) - 1,
+                array.array("d", self._bins),
+            )
             self.fillObservedHist(cr, da_hist)
             self.fillBackgroundHist(cr, mc_hist)
             self.fillExpectedHist(cr, cr_hist)
             da_hist.SetTitle("")
-            cr_hist.SetFillColor(r.kBlue-10)
-            mc_hist.SetFillColor(r.kGray)
+            cr_hist.SetFillColor(ROOT.kBlue - 10)
+            mc_hist.SetFillColor(ROOT.kGray)
 
             cr_hist = getNormalizedHist(cr_hist)
             da_hist = getNormalizedHist(da_hist)
             mc_hist = getNormalizedHist(mc_hist)
             pre_hist = getNormalizedHist(self.cr_prefit_hists[j])
 
-            cr_hist.SetLineColor(r.kBlue)
+            cr_hist.SetLineColor(ROOT.kBlue)
             cr_hist.SetLineWidth(2)
             mc_hist.SetLineColor(1)
             mc_hist.SetLineWidth(2)
@@ -1071,15 +1041,15 @@ class Category:
             self.histograms.append(pre_hist)
 
             c.cd()
-            pad1 = r.TPad("p1", "p1", 0, 0.28, 1, 1)
+            pad1 = ROOT.TPad("p1", "p1", 0, 0.28, 1, 1)
             pad1.SetBottomMargin(0.01)
             pad1.SetCanvas(c)
             pad1.Draw()
             pad1.cd()
-            tlg = r.TLegend(0.54, 0.53, 0.89, 0.89)
+            tlg = ROOT.TLegend(0.54, 0.53, 0.89, 0.89)
             tlg.SetFillColor(0)
             tlg.SetTextFont(42)
-            tlg.AddEntry(da_hist, "Data - %s" % cr.ret_title(), "PEL")
+            tlg.AddEntry(da_hist, f"Data - {cr.ret_title()}", "PEL")
             tlg.AddEntry(cr_hist, "Expected (post-fit)", "FL")
             tlg.AddEntry(mc_hist, "Backgrounds Component", "F")
             tlg.AddEntry(pre_hist, "Expected (pre-fit)", "L")
@@ -1101,20 +1071,20 @@ class Category:
 
             # Ratio plot
             c.cd()
-            pad2 = r.TPad("p2", "p2", 0, 0.068, 1, 0.285)
+            pad2 = ROOT.TPad("p2", "p2", 0, 0.068, 1, 0.285)
             pad2.SetTopMargin(0.04)
             pad2.SetCanvas(c)
             pad2.Draw()
             pad2.cd()
             # Need to make sure cr hist has no errors for when we divide
             cr_hist_noerr = cr_hist.Clone()
-            cr_hist_noerr.SetName(cr_hist.GetName()+"noerr")
+            cr_hist_noerr.SetName(cr_hist.GetName() + "noerr")
             for b in range(cr_hist_noerr.GetNbinsX()):
-                cr_hist_noerr.SetBinError(b+1, 0)
+                cr_hist_noerr.SetBinError(b + 1, 0)
             pre_hist_noerr = pre_hist.Clone()
-            pre_hist_noerr.SetName(pre_hist.GetName()+"noerr")
+            pre_hist_noerr.SetName(pre_hist.GetName() + "noerr")
             for b in range(pre_hist_noerr.GetNbinsX()):
-                pre_hist_noerr.SetBinError(b+1, 0)
+                pre_hist_noerr.SetBinError(b + 1, 0)
 
             ratio = da_hist.Clone()
             ratio_pre = da_hist.Clone()
@@ -1137,19 +1107,17 @@ class Category:
             ratio_pre.SetMarkerColor(pre_hist.GetLineColor())
             ratio_pre.SetLineWidth(2)
             eline = ratio.Clone()
-            eline.SetName("OneWithError_%s" % ratio.GetName())
+            eline.SetName(f"OneWithError_{ratio.GetName()}")
             self.all_hists.append(eline)
             for b in range(ratio.GetNbinsX()):
-                eline.SetBinContent(b+1, 1)
-                if cr_hist.GetBinContent(b+1) > 0:
-                    eline.SetBinError(
-                        b+1, cr_hist.GetBinError(b+1)/cr_hist.GetBinContent(b+1))
-            eline.SetFillColor(r.kBlue-10)
-            eline.SetLineColor(r.kBlue-10)
+                eline.SetBinContent(b + 1, 1)
+                if cr_hist.GetBinContent(b + 1) > 0:
+                    eline.SetBinError(b + 1, cr_hist.GetBinError(b + 1) / cr_hist.GetBinContent(b + 1))
+            eline.SetFillColor(ROOT.kBlue - 10)
+            eline.SetLineColor(ROOT.kBlue - 10)
             eline.SetMarkerSize(0)
             eline.Draw("sameE2")
-            line = r.TLine(da_hist.GetXaxis().GetXmin(), 1,
-                           da_hist.GetXaxis().GetXmax(), 1)
+            line = ROOT.TLine(da_hist.GetXaxis().GetXmin(), 1, da_hist.GetXaxis().GetXmax(), 1)
             line.SetLineColor(1)
             line.SetLineStyle(2)
             line.SetLineWidth(2)
@@ -1166,7 +1134,7 @@ class Category:
         #  self._fout.WriteTObject(self.canvases[canv])
         # finally THE model
         self._fout.WriteTObject(self.model_hist)
-        print ("Saving hitograms")
+        print("Saving hitograms")
         for hist in self.histograms:
-            print ("Saving - ", hist.GetName())
+            print("Saving - ", hist.GetName())
             self._fout.WriteTObject(hist)

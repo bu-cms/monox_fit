@@ -27,7 +27,7 @@
 // RooStats includes
 #include "RooWorkspace.h"
 
-#include "include/diagonalize.h"
+#include "diagonalize.h"
 
 #include <string>
 #include <vector>

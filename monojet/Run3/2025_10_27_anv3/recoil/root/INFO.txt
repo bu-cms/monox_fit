@@ -1,0 +1,448 @@
+Input directory: /ada_mnt/ada/user/anmalara/WorkingArea/CMSSW_14_1_0_pre4/src/monox_fit/inputs/histograms/recoil/monojet_Run3
+--- INPUT ---
+3328b676aac9c1b80cc3b33cba27f8dc  histograms_monojet.root
+--- REPO INFO ---
+Commit hash: 1a227fb0cf19ba851adba2b2ca933b6300a7be5d
+Branch name: dev
+diff --git a/inputs/histograms/mjj/vbf_Run3/histograms_vbf.root b/inputs/histograms/mjj/vbf_Run3/histograms_vbf.root
+index 2f82745..f65c15d 100644
+Binary files a/inputs/histograms/mjj/vbf_Run3/histograms_vbf.root and b/inputs/histograms/mjj/vbf_Run3/histograms_vbf.root differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_electron.root b/inputs/sys/mjj/vbf_Run3/systematics_electron.root
+deleted file mode 100644
+index eaf0c0d..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_electron.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jer_Run3.root b/inputs/sys/mjj/vbf_Run3/systematics_jer_Run3.root
+deleted file mode 100644
+index 91fed9d..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jer_Run3.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesAbsolute.root b/inputs/sys/mjj/vbf_Run3/systematics_jesAbsolute.root
+deleted file mode 100644
+index af2d25f..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesAbsolute.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesAbsolute_Run3.root b/inputs/sys/mjj/vbf_Run3/systematics_jesAbsolute_Run3.root
+deleted file mode 100644
+index 9b939c3..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesAbsolute_Run3.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesBBEC1.root b/inputs/sys/mjj/vbf_Run3/systematics_jesBBEC1.root
+deleted file mode 100644
+index 17cd0df..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesBBEC1.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesBBEC1_Run3.root b/inputs/sys/mjj/vbf_Run3/systematics_jesBBEC1_Run3.root
+deleted file mode 100644
+index d52c7c0..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesBBEC1_Run3.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesEC2.root b/inputs/sys/mjj/vbf_Run3/systematics_jesEC2.root
+deleted file mode 100644
+index 26dc0bf..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesEC2.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesEC2_Run3.root b/inputs/sys/mjj/vbf_Run3/systematics_jesEC2_Run3.root
+deleted file mode 100644
+index 6ce182f..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesEC2_Run3.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesFlavorQCD.root b/inputs/sys/mjj/vbf_Run3/systematics_jesFlavorQCD.root
+deleted file mode 100644
+index 10b9ce1..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesFlavorQCD.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesHF.root b/inputs/sys/mjj/vbf_Run3/systematics_jesHF.root
+deleted file mode 100644
+index a06e7cc..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesHF.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesHF_Run3.root b/inputs/sys/mjj/vbf_Run3/systematics_jesHF_Run3.root
+deleted file mode 100644
+index 8331d80..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesHF_Run3.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesRelativeBal.root b/inputs/sys/mjj/vbf_Run3/systematics_jesRelativeBal.root
+deleted file mode 100644
+index c5eae6c..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesRelativeBal.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_jesRelativeSample_Run3.root b/inputs/sys/mjj/vbf_Run3/systematics_jesRelativeSample_Run3.root
+deleted file mode 100644
+index e52a5cd..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_jesRelativeSample_Run3.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_muf.root b/inputs/sys/mjj/vbf_Run3/systematics_muf.root
+deleted file mode 100644
+index 131a930..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_muf.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_muonID.root b/inputs/sys/mjj/vbf_Run3/systematics_muonID.root
+deleted file mode 100644
+index 1841b7a..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_muonID.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_muonISO.root b/inputs/sys/mjj/vbf_Run3/systematics_muonISO.root
+deleted file mode 100644
+index b7951eb..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_muonISO.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_mur.root b/inputs/sys/mjj/vbf_Run3/systematics_mur.root
+deleted file mode 100644
+index 854f51b..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_mur.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_pdf.root b/inputs/sys/mjj/vbf_Run3/systematics_pdf.root
+deleted file mode 100644
+index 57ed4b2..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_pdf.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_photon.root b/inputs/sys/mjj/vbf_Run3/systematics_photon.root
+deleted file mode 100644
+index 9f41c87..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_photon.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_prefiring_jet.root b/inputs/sys/mjj/vbf_Run3/systematics_prefiring_jet.root
+deleted file mode 100644
+index 7c01435..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_prefiring_jet.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_pu.root b/inputs/sys/mjj/vbf_Run3/systematics_pu.root
+deleted file mode 100644
+index 406be3b..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_pu.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_trigger_electron.root b/inputs/sys/mjj/vbf_Run3/systematics_trigger_electron.root
+deleted file mode 100644
+index f09657c..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_trigger_electron.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_trigger_met.root b/inputs/sys/mjj/vbf_Run3/systematics_trigger_met.root
+deleted file mode 100644
+index 1c40a3b..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_trigger_met.root and /dev/null differ
+diff --git a/inputs/sys/mjj/vbf_Run3/systematics_trigger_photon.root b/inputs/sys/mjj/vbf_Run3/systematics_trigger_photon.root
+deleted file mode 100644
+index 5d1d2f6..0000000
+Binary files a/inputs/sys/mjj/vbf_Run3/systematics_trigger_photon.root and /dev/null differ
+diff --git a/makeWorkspace/build_workspace.py b/makeWorkspace/build_workspace.py
+index 0ff4bd9..b0516e4 100755
+--- a/makeWorkspace/build_workspace.py
++++ b/makeWorkspace/build_workspace.py
+@@ -104,6 +104,18 @@ def main() -> None:
+     input_dir = args.dir or f"inputs/histograms/{args.variable}/{args.analysis}_{args.year}/"
+     root_folder = args.folder or f"category_{args.analysis}_{args.year}"
+     tag = args.tag or date.today().strftime("%Y_%m_%d")
++    tag += "_anv3"
++    # tag += "_for_preapp"
++    # tag += "_for_preapp_95"
++    # tag += "_for_preapp_unblind"
++    # tag += "_for_preapp_unblind_unc1"
++    # tag += "_for_preapp_unblind_unc2"
++    # tag += "_new_gjets"
++    # tag += "_new_gjets_no_vh"
++    # tag += "dm_test"
++    # tag += "_dm_2000_1"
++    # tag += "_dm_2000_200"
++    # tag += "_dm_1500_1"
+ 
+     build_workspace(input_dir=input_dir, analysis=args.analysis, year=args.year, tag=tag, variable=args.variable, root_folder=root_folder)
+ 
+diff --git a/makeWorkspace/make_workspace.py b/makeWorkspace/make_workspace.py
+index e8c6dcf..704d7b9 100755
+--- a/makeWorkspace/make_workspace.py
++++ b/makeWorkspace/make_workspace.py
+@@ -365,6 +365,9 @@ def create_workspace(
+     os.makedirs(os.path.dirname(output_filename), exist_ok=True)
+ 
+     input_file = ROOT.TFile(input_filename, "READ")
++    # input_file = ROOT.TFile(input_filename.replace(".root", "_bsm.root "), "READ")
++    # input_file_gjet = ROOT.TFile(input_filename.replace(".root", "_gjets.root "), "READ")
++    # input_file_gjet = ROOT.TFile(input_filename, "READ")
+     output_file = ROOT.TFile(output_filename, "RECREATE")
+ 
+     input_dir = input_file if root_folder is None else input_file.Get(root_folder)
+@@ -381,6 +384,9 @@ def create_workspace(
+ 
+     for key in input_dir.GetListOfKeys():
+         obj = key.ReadObj()
++        # if key.GetName() == "gjets_qcdgjets":
++        # obj = input_file_gjet.Get(f"{root_folder}/{key.GetName()}")
++        # obj.SetDirectory(0)
+         if not isinstance(obj, (ROOT.TH1D, ROOT.TH1F)):
+             continue
+         process_histogram(
+diff --git a/makeWorkspace/vbf_ewk_w.py b/makeWorkspace/vbf_ewk_w.py
+index d7b281b..78247c9 100644
+--- a/makeWorkspace/vbf_ewk_w.py
++++ b/makeWorkspace/vbf_ewk_w.py
+@@ -52,7 +52,8 @@ def cmodel(
+             "ewk_wen": "ewk_singleelectron",
+         },
+         "veto_channel_list": ["ewk_wmn", "ewk_wen"],  # Channels where veto uncertainties are applied.
+-        "trigger_channel_list": ["ewk_wmn"],  # Channels where trigger uncertainties are applied.
++        # "trigger_channel_list": ["ewk_wmn"],  # Channels where trigger uncertainties are applied.
++        "trigger_channel_list": [],
+         "jes_jer_channel_list": ["ewk_wmn", "ewk_wen"],  # Channels where JES/JER uncertainties are applied.
+         "region_names": {  # Mapping of transfer factor labels to region names.
+             "ewk_wmn": "ewk_singlemuon",
+diff --git a/makeWorkspace/vbf_ewk_z.py b/makeWorkspace/vbf_ewk_z.py
+index b282d11..b55b46e 100644
+--- a/makeWorkspace/vbf_ewk_z.py
++++ b/makeWorkspace/vbf_ewk_z.py
+@@ -56,7 +56,8 @@ def cmodel(
+             "ewk_photon": "ewk_photon",
+         },
+         "veto_channel_list": ["ewk_w"],  # Channels where veto uncertainties are applied.
+-        "trigger_channel_list": ["ewk_zmm"],  # Channels where trigger uncertainties are applied.
++        # "trigger_channel_list": ["ewk_zmm"],  # Channels where trigger uncertainties are applied.
++        "trigger_channel_list": [],
+         "jes_jer_channel_list": ["ewk_zmm", "ewk_zee", "ewk_w", "ewk_photon"],  # Channels where JES/JER uncertainties are applied.
+         "region_names": {  # Mapping of transfer factor labels to region names.
+             "ewk_zmm": "ewk_dimuonCR",
+diff --git a/makeWorkspace/vbf_qcd_w.py b/makeWorkspace/vbf_qcd_w.py
+index ef8586f..699f4ad 100644
+--- a/makeWorkspace/vbf_qcd_w.py
++++ b/makeWorkspace/vbf_qcd_w.py
+@@ -52,7 +52,8 @@ def cmodel(
+             "qcd_wen": "qcd_singleelectron",
+         },
+         "veto_channel_list": ["qcd_wmn", "qcd_wen"],  # Channels where veto uncertainties are applied.
+-        "trigger_channel_list": ["qcd_wmn"],  # Channels where trigger uncertainties are applied.
++        # "trigger_channel_list": ["qcd_wmn"],  # Channels where trigger uncertainties are applied.
++        "trigger_channel_list": [],
+         "jes_jer_channel_list": ["qcd_wmn", "qcd_wen"],  # Channels where JES/JER uncertainties are applied.
+         "region_names": {  # Mapping of transfer factor labels to region names.
+             "qcd_wmn": "qcd_singlemuon",
+diff --git a/makeWorkspace/vbf_qcd_z.py b/makeWorkspace/vbf_qcd_z.py
+index bb5453f..ae63fab 100644
+--- a/makeWorkspace/vbf_qcd_z.py
++++ b/makeWorkspace/vbf_qcd_z.py
+@@ -58,7 +58,8 @@ def cmodel(
+             "qcd_photon": "qcd_photon",
+         },
+         "veto_channel_list": ["qcd_w"],  # Channels where veto uncertainties are applied.
+-        "trigger_channel_list": ["qcd_zmm"],  # Channels where trigger uncertainties are applied.
++        # "trigger_channel_list": ["qcd_zmm"],  # Channels where trigger uncertainties are applied.
++        "trigger_channel_list": [],
+         "jes_jer_channel_list": ["qcd_zmm", "qcd_zee", "qcd_w", "qcd_photon"],  # Channels where JES/JER uncertainties are applied.
+         "region_names": {  # Mapping of transfer factor labels to region names.
+             "qcd_zmm": "qcd_dimuonCR",
+diff --git a/plotter/plot_diff_nuis.py b/plotter/plot_diff_nuis.py
+index 4c0c903..2d28bfa 100755
+--- a/plotter/plot_diff_nuis.py
++++ b/plotter/plot_diff_nuis.py
+@@ -106,6 +106,8 @@ def plot_diff_nuis(diffnuis_file: str, outdir: str, category: str) -> None:
+         "dielectronCR": lambda l: "stat_error" in l and "dielectronCR" in l,
+         "zCR": lambda l: "stat_error" in l and "zCR" in l,
+         "mcstat": lambda l: "mergedMCBkg" in l,
++        # "mcstat_1": lambda l: "mergedMCBkg" in l and "bin1" in l,
++        # "mcstat_else": lambda l: "mergedMCBkg" in l and "bin1" not in l,
+     }
+ 
+     indices_map = {name: {} for name in categories}
+diff --git a/utils/datacards/do_limits.sh b/utils/datacards/do_limits.sh
+index 6a21ef8..0730b0e 100644
+--- a/utils/datacards/do_limits.sh
++++ b/utils/datacards/do_limits.sh
+@@ -14,7 +14,7 @@ pushd ${FOLDER} > /dev/null
+ TAG="${CHANNEL}_${YEAR}"
+ CARD="../cards/card_${TAG}.root"
+ LOGFILE="log_limit_${YEAR}.txt"
+-METHOD="-M AsymptoticLimits"
++METHOD="AsymptoticLimits"
+ 
+ # Uncomment the options you want to use
+ EXTRA_OPTS=()
+@@ -22,7 +22,7 @@ EXTRA_OPTS+=(--rMin -100 --rMax 100)
+ EXTRA_OPTS+=(--run blind)
+ 
+ cecho blue "Running AsymptoticLimits for ${TAG}"
+-CMD="combine ${METHOD} ${CARD} -n \"_${TAG}\" ${EXTRA_OPTS[*]}"
++CMD="combine -M ${METHOD} ${CARD} -n \"_${TAG}\" ${EXTRA_OPTS[*]}"
+ run_with_log "$CMD" "$LOGFILE"
+ 
+ popd > /dev/null
+diff --git a/utils/workspace/processes.py b/utils/workspace/processes.py
+index a060dc2..187af9f 100644
+--- a/utils/workspace/processes.py
++++ b/utils/workspace/processes.py
+@@ -1,4 +1,63 @@
+ from typing import Any
++from utils.generic.logger import initialize_colorized_logger
++
++logger = initialize_colorized_logger(log_level="INFO")
++
++
++def get_dm_samples() -> list[str]:
++    samples = []
++    masses = {
++        "1": {
++            "100p0": ["1p0", "30p0", "40p0", "45p0", "55p0", "60p0", "70p0", "100p0", "150p0", "200p0"],
++            "250p0": ["1p0", "75p0", "100p0", "150p0"],
++            "500p0": ["1p0", "150p0", "200p0", "300p0"],
++            "750p0": ["1p0"],
++            "1000p0": ["1p0", "300p0", "400p0", "600p0"],
++            "1250p0": ["1p0"],
++            "1750p0": ["1p0"],
++            "1500p0": ["1p0", "450p0", "600p0", "900p0"],
++            "2000p0": ["1p0", "200p0", "400p0", "600p0", "800p0", "900p0", "1100p0", "1200p0", "1400p0"],
++            "2250p0": ["1p0"],
++            "2500p0": ["1000p0", "1500p0", "1p0", "750p0"],
++        },
++        "0": {
++            "10p0": ["1p0", "4p0", "6p0"],
++            "50p0": ["1p0", "20p0", "22p0", "28p0"],
++            "100p0": ["1p0", "40p0", "45p0", "55p0"],
++            "200p0": ["1p0"],
++            "300p0": ["1p0"],
++            "350p0": ["1p0"],
++            "400p0": ["1p0"],
++            "450p0": ["1p0"],
++            "500p0": ["150p0", "1p0", "200p0", "225p0", "275p0", "50p0"],
++            "600p0": ["1p0"],
++            "700p0": ["1p0"],
++            "800p0": ["1p0"],
++            "900p0": ["1p0"],
++            "1000p0": ["1p0"],
++        },
++    }
++    spins_coupling = {
++        "ax": {"spin": "1", "gq": "0p25"},
++        "vec": {"spin": "1", "gq": "0p25"},
++        # "pse": {"spin": "0", "gq": "1p0"},
++        # "sca": {"spin": "0", "gq": "1p0"},
++    }
++    gdm = "1p0"
++    for particle, info in spins_coupling.items():
++        spin = info["spin"]
++        gq = info["gq"]
++        for my, mxs in masses[spin].items():
++            for mx in mxs:
++                dm_name = f"DM-{particle}_{gq}_{gdm}_{my}_{mx}".replace("p0", "")
++                if len(dm_name) > 24:
++                    logger.warning(f"BSM name too long: {len(dm_name)}, {dm_name}")
++                    import pdb
++
++                    pdb.set_trace()
++                samples.append(dm_name)
++
++    return samples
+ 
+ 
+ def get_processes(analysis: str, region: str, type: str) -> list[str]:
+@@ -33,6 +92,93 @@ def get_processes(analysis: str, region: str, type: str) -> list[str]:
+         "monojet": {
+             "signal": {
+                 "signals": ["zh", "wh", "vbf", "ggh", "ggzh"],
++                # "signals": ["vbf", "ggh"],  # ggzh
++                # "signals": ["DM-ax_0p25_1_100_1"],
++                # "signals": ["DM-ax_0p25_1_100_30"],
++                # "signals": ["DM-ax_0p25_1_100_40"],
++                # "signals": ["DM-ax_0p25_1_100_45"],
++                # "signals": ["DM-ax_0p25_1_100_55"],
++                # "signals": ["DM-ax_0p25_1_100_60"],
++                # "signals": ["DM-ax_0p25_1_100_70"],
++                # "signals": ["DM-ax_0p25_1_100_100"],
++                # "signals": ["DM-ax_0p25_1_100_150"],
++                # "signals": ["DM-ax_0p25_1_100_200"],
++                # "signals": ["DM-ax_0p25_1_250_1"],
++                # "signals": ["DM-ax_0p25_1_250_75"],
++                # "signals": ["DM-ax_0p25_1_250_100"],
++                # "signals": ["DM-ax_0p25_1_250_150"],
++                # "signals": ["DM-ax_0p25_1_500_1"],
++                # "signals": ["DM-ax_0p25_1_500_150"],
++                # "signals": ["DM-ax_0p25_1_500_200"],
++                # "signals": ["DM-ax_0p25_1_500_300"],
++                # "signals": ["DM-ax_0p25_1_750_1"],
++                # "signals": ["DM-ax_0p25_1_1000_1"],
++                # "signals": ["DM-ax_0p25_1_1000_300"],
++                # "signals": ["DM-ax_0p25_1_1000_400"],
++                # "signals": ["DM-ax_0p25_1_1000_600"],
++                # "signals": ["DM-ax_0p25_1_1250_1"],
++                # "signals": ["DM-ax_0p25_1_1750_1"],
++                # "signals": ["DM-ax_0p25_1_1500_1"],
++                # "signals": ["DM-ax_0p25_1_1500_450"],
++                # "signals": ["DM-ax_0p25_1_1500_600"],
++                # "signals": ["DM-ax_0p25_1_1500_900"],
++                # "signals": ["DM-ax_0p25_1_2000_1"],
++                # "signals": ["DM-ax_0p25_1_2000_200"],
++                # "signals": ["DM-ax_0p25_1_2000_400"],
++                # "signals": ["DM-ax_0p25_1_2000_600"],
++                # "signals": ["DM-ax_0p25_1_2000_800"],
++                # "signals": ["DM-ax_0p25_1_2000_900"],
++                # "signals": ["DM-ax_0p25_1_2000_1100"],
++                # "signals": ["DM-ax_0p25_1_2000_1200"],
++                # "signals": ["DM-ax_0p25_1_2000_1400"],
++                # "signals": ["DM-ax_0p25_1_2250_1"],
++                # "signals": ["DM-ax_0p25_1_2500_1000"],
++                # "signals": ["DM-ax_0p25_1_2500_1500"],
++                # "signals": ["DM-ax_0p25_1_2500_1"],
++                # "signals": ["DM-ax_0p25_1_2500_750"],
++                # "signals": ["DM-vec_0p25_1_100_1"],
++                # "signals": ["DM-vec_0p25_1_100_30"],
++                # "signals": ["DM-vec_0p25_1_100_40"],
++                # "signals": ["DM-vec_0p25_1_100_45"],
++                # "signals": ["DM-vec_0p25_1_100_55"],
++                # "signals": ["DM-vec_0p25_1_100_60"],
++                # "signals": ["DM-vec_0p25_1_100_70"],
++                # "signals": ["DM-vec_0p25_1_100_100"],
++                # "signals": ["DM-vec_0p25_1_100_150"],
++                # "signals": ["DM-vec_0p25_1_100_200"],
++                # "signals": ["DM-vec_0p25_1_250_1"],
++                # "signals": ["DM-vec_0p25_1_250_75"],
++                # "signals": ["DM-vec_0p25_1_250_100"],
++                # "signals": ["DM-vec_0p25_1_250_150"],
++                # "signals": ["DM-vec_0p25_1_500_1"],
++                # "signals": ["DM-vec_0p25_1_500_150"],
++                # "signals": ["DM-vec_0p25_1_500_200"],
++                # "signals": ["DM-vec_0p25_1_500_300"],
++                # "signals": ["DM-vec_0p25_1_750_1"],
++                # "signals": ["DM-vec_0p25_1_1000_1"],
++                # "signals": ["DM-vec_0p25_1_1000_300"],
++                # "signals": ["DM-vec_0p25_1_1000_400"],
++                # "signals": ["DM-vec_0p25_1_1000_600"],
++                # "signals": ["DM-vec_0p25_1_1250_1"],
++                # "signals": ["DM-vec_0p25_1_1750_1"],
++                # "signals": ["DM-vec_0p25_1_1500_1"],
++                # "signals": ["DM-vec_0p25_1_1500_450"],
++                # "signals": ["DM-vec_0p25_1_1500_600"],
++                # "signals": ["DM-vec_0p25_1_1500_900"],
++                # "signals": ["DM-vec_0p25_1_2000_1"],
++                # "signals": ["DM-vec_0p25_1_2000_200"],
++                # "signals": ["DM-vec_0p25_1_2000_400"],
++                # "signals": ["DM-vec_0p25_1_2000_600"],
++                # "signals": ["DM-vec_0p25_1_2000_800"],
++                # "signals": ["DM-vec_0p25_1_2000_900"],
++                # "signals": ["DM-vec_0p25_1_2000_1100"],
++                # "signals": ["DM-vec_0p25_1_2000_1200"],
++                # "signals": ["DM-vec_0p25_1_2000_1400"],
++                # "signals": ["DM-vec_0p25_1_2250_1"],
++                # "signals": ["DM-vec_0p25_1_2500_1000"],
++                # "signals": ["DM-vec_0p25_1_2500_1500"],
++                # "signals": ["DM-vec_0p25_1_2500_1"],
++                # "signals": ["DM-vec_0p25_1_2500_750"],
+                 "models": ["qcd_zjets", "qcd_wjets"],
+                 "backgrounds": ["top", "qcdgjets", "wz", "zz", "ww", "ewkzjets", "ewkwjets"],
+                 "data_driven": ["qcd_estimate"],
+diff --git a/utils/workspace/uncertainties.py b/utils/workspace/uncertainties.py
+index 7819d92..b392af4 100644
+--- a/utils/workspace/uncertainties.py
++++ b/utils/workspace/uncertainties.py
+@@ -2,13 +2,16 @@ from typing import Any, Optional, Union
+ from functools import partial
+ from collections.abc import Callable
+ 
+-from utils.workspace.processes import get_processes, get_all_regions, get_processes_by_region
++from utils.workspace.processes import get_processes, get_all_regions, get_processes_by_region, get_dm_samples
+ 
+ 
+ def get_shape_systematic_sources(category: str) -> list[str]:
+     """Return the list of shape-related systematic uncertainty sources."""
+     analysis, year = category.split("_")
+     sources = {
++        "vbf": {
++            "Run3": ["jecs", "btag", "pdf_scale", "id_shapes"],
++        },
+         "monojet": {
+             "Run3": ["jecs", "btag", "prefiring_jet", "pdf_scale", "id_shapes", "diboson_unc", "qcd_estimate_closure"],
+         },
+@@ -192,6 +195,7 @@ def get_higgs_theory_unc(year: str, analysis: str) -> dict[str, Any]:
+     _ = analysis  # Currently unused
+     return {
+         "Run3": {
++            "QCDscale_signal": {"value": 1.1, "processes": get_dm_samples()},
+             "QCDscale_ggH": {"value": (1.046, 0.933), "processes": ["ggh"]},  # YR checked
+             "QCDscale_qqH": {"value": (1.005, 0.997), "processes": ["vbf"]},  # YR checked
+             "QCDscale_wh": {"value": (1.004, 0.993), "processes": ["wh"]},  # YR checked
+@@ -215,6 +219,8 @@ def get_higgs_theory_shape_unc(year: str, analysis: str) -> dict[str, Any]:
+         "ggh": [f"{source}_ggH_ACCEPT" for source in sources],
+         "vbf": [f"{source}_qqH_ACCEPT" for source in sources],
+     }
++    for dm in get_dm_samples():
++        syst_map[dm] = [f"{source}_ACCEPT" for source in sources]
+     systematics = {}
+     for proc, theory_unc in syst_map.items():
+         systematics.update(get_generic_shape(systematics=theory_unc, analysis=analysis, regions=regions, processes=lambda region: {proc}))
+
+--- OUTPUT ---
+624d403c12385a889c2e8ec5a343d2d2  combined_model_monojet.root
+72b8f3fdd557b04903a6fd66ff104b77  ws_monojet.root

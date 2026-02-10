@@ -1,7 +1,7 @@
 #ifndef MODELBUILDER
 #define MODELBUILDER
 
-#include "include/diagonalize.h"
+#include "diagonalize.h"
 //#include "include/kinematic_reweights.h"
 #include "TDirectory.h" 
 #include "TFile.h" 
